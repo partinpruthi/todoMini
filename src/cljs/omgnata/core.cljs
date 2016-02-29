@@ -14,6 +14,7 @@
 (def server-url (if (get-env :dev) "http://localhost:8000/server.php" "server.php"))
 
 (defonce instance (atom 0))
+(defonce todos (atom {}))
 
 ;; -------------------------
 ;; Functions
@@ -62,6 +63,8 @@
             ; if we have fired off a new instance don't use this one
             (when (= instance-id @instance)
               (print "long-poller result:" ok result)
+              (when ok
+                (reset! todos (result "files")))
               (<! (timeout 1000))
               (recur (result "timestamp")))))))
 
