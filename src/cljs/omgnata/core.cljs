@@ -29,6 +29,20 @@
                    :handler #(put! c %)})
     c))
 
+
+(defn long-poller [instance-id]
+  (go (loop [last-timestamp 0]
+          (print "Long poller initiated:" instance-id)
+          ; don't fire off more than 1 time per second
+          (let [[ok result] (<! (get-files last-timestamp))]
+            ; if we have fired off a new instance don't use this one
+            (when (= instance-id @instance)
+              (print "long-poller result:" ok result)
+              (when ok
+                (reset! todos (result "files")))
+              (<! (timeout 1000))
+              (recur (result "timestamp")))))))
+
 ;; -------------------------
 ;; Views
 
@@ -60,19 +74,6 @@
 
 ;; -------------------------
 ;; Initialize app
-
-(defn long-poller [instance-id]
-  (go (loop [last-timestamp 0]
-          (print "Long poller initiated:" instance-id)
-          ; don't fire off more than 1 time per second
-          (let [[ok result] (<! (get-files last-timestamp))]
-            ; if we have fired off a new instance don't use this one
-            (when (= instance-id @instance)
-              (print "long-poller result:" ok result)
-              (when ok
-                (reset! todos (result "files")))
-              (<! (timeout 1000))
-              (recur (result "timestamp")))))))
 
 ; initiate the long-poller
 (long-poller (swap! instance inc))
