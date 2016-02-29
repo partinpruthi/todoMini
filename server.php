@@ -6,26 +6,26 @@
 
 // enable cors
 cors();
-// set php runtime to unlimited
-set_time_limit(0);
-// where does the data come from ? In real world this would be a SQL query or something
-$data_source_file = 'data.txt';
+
+// tell PHP it can timeout after 5 minutes
+set_time_limit(300);
+
+$datadir = "data";
+
 // main loop
 while (true) {
     // if ajax request has send a timestamp, then $last_ajax_call = timestamp, else $last_ajax_call = null
     $last_ajax_call = isset($_GET['timestamp']) ? (int)$_GET['timestamp'] : null;
-    // PHP caches file data, like requesting the size of a file, by default. clearstatcache() clears that cache
-    clearstatcache();
     // get timestamp of when file has been changed the last time
-    $last_change_in_data_file = filemtime($data_source_file);
+    $last_change_in_data_files = dirTimestamp($datadir);
     // if no timestamp delivered via ajax or data.txt has been changed SINCE last ajax timestamp
-    if ($last_ajax_call == null || $last_change_in_data_file > $last_ajax_call) {
+    if ($last_ajax_call == null || $last_change_in_data_files > $last_ajax_call) {
         // get content of data.txt
-        $data = file_get_contents($data_source_file);
+        $data = dirFiles($datadir);
         // put data.txt's content and timestamp of last data.txt change into array
         $result = array(
-            'data_from_file' => $data,
-            'timestamp' => $last_change_in_data_file
+            'files' => $data,
+            'timestamp' => $last_change_in_data_files
         );
         // encode to JSON, render the result (for AJAX)
         $json = json_encode($result);
@@ -39,18 +39,50 @@ while (true) {
     }
 }
 
-
 // Open a directory, and read its contents
 // http://www.w3schools.com/php/func_directory_readdir.asp
-/*if (is_dir($dir)){
-  if ($dh = opendir($dir)){
-    while (($file = readdir($dh)) !== false){
-      echo "filename:" . $file . "<br>";
+function dirFiles($datadir) {
+  $files = array();
+  if ($dh = opendir($datadir)){
+    while (($filename = readdir($dh)) !== false){
+      if (endsWith($filename, ".txt")) {
+        $filepath = $datadir . "/" . $filename;
+        $files[$filename] = file_get_contents($filepath);
+      }
     }
     closedir($dh);
   }
-}*/
+  return $files;
+}
 
+function dirTimestamp($datadir) {
+  // PHP caches file data, like requesting the size of a file, by default. clearstatcache() clears that cache
+  clearstatcache();
+  $timestamp = 0;
+  if ($dh = opendir($datadir)){
+    while (($filename = readdir($dh)) !== false){
+      if (endsWith($filename, ".txt")) {
+        $filepath = $datadir . "/" . $filename;
+        $file_timestamp = filemtime($filepath);
+        if ($file_timestamp > $timestamp) {
+          $timestamp = $file_timestamp;
+        }
+      }
+    }
+    closedir($dh);
+  }
+  return $timestamp;
+}
+
+
+// test if a string ends with another string
+// http://stackoverflow.com/a/619725/2131094
+function endsWith($string, $test) {
+  $strlen = strlen($string);
+  $testlen = strlen($test);
+  if ($testlen > $strlen) return false;
+  return substr_compare($string, $test, $strlen - $testlen, $testlen) === 0;
+}
 
 function cors() {
     // Allow from any origin

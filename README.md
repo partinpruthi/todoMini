@@ -6,6 +6,7 @@ Simple TODO list app requirements:
  * Easy to deploy.
  * Self-hosted & FLOSS.
  * Allows multiple people to update a list.
+ * Simple text based format for easy editing (see below).
 
 This did not exist, so I have built it.
 
@@ -24,3 +25,12 @@ Copy `./example.htaccess` to `.htaccess` and edit it.
 If you want multiple users, clone the directory for each user and create a unique login for each.
 
 To create a shared list, symlink one of the TODO list files into each user's data directory.
+
+### Textfile format ###
+
+The TODO lists use standard Markdown format:
+
+	 * [x] This is my first completed item.
+	 * [ ] Another uncompleted item.
+	 * [ ] Something else.
+

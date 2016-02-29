@@ -1,4 +1,0 @@
- * [ ] This is the first thing.
- * [x] This is another.
- * [x] Wow what a cool thing.
- * [ ] Yep!
