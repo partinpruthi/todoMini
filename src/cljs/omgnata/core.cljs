@@ -58,11 +58,11 @@
   (go (loop [last-timestamp 0]
           (print "Long poller initiated:" instance-id)
           ; don't fire off more than 1 time per second
-          (let [wait-for-me (<! (timeout 1000))
-                [ok result] (<! (get-files last-timestamp))]
+          (let [[ok result] (<! (get-files last-timestamp))]
             ; if we have fired off a new instance don't use this one
             (when (= instance-id @instance)
               (print "long-poller result:" ok result)
+              (<! (timeout 1000))
               (recur (result "timestamp")))))))
 
 ; initiate the long-poller
