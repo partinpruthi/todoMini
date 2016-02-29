@@ -34,7 +34,13 @@
 
 (defn home-page []
   [:div [:h2 "Welcome to omgnata"]
-   [:div [:a {:href "/about"} "go to about page"]]])
+   [:div [:a {:href "/about"} "go to about page"]]
+   (doall (for [[fname text] @todos]
+            [:ul {:key fname}
+             [:li {} fname]
+             (for [line (.split text "\n")]
+               (when (not (= line ""))
+                 [:li {} line]))]))])
 
 (defn about-page []
   [:div [:h2 "About omgnata"]
