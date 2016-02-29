@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>omgnata</title>
+</head>
+<body>
+  
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css"/>
+
+  <style>
+    body, html { max-width: 1024px; margin-left: auto; margin-right: auto; overflow-x: hidden; }
+    ul { padding-left: 0px; }
+    li { font-size: 2em; list-style-type: none; margin-left: 0.25em; margin-right: 0.25em; margin-top: 0.25em; margin-bottom: 0.25em; white-space: nowrap; }
+    .my-handle { cursor: move; cursor: -webkit-grabbing; background-color: #eee; padding-right: 0.5em; padding-left: 0.5em; position: absolute; right: 0px; border-radius: 3px; border: 1px solid silver;}
+  </style>
+  
+  <!-- Latest Sortable -->
+  <script src="http://rubaxa.github.io/Sortable/Sortable.js"></script>
+  
+  
+  <!-- List with handle -->
+  <ul id="listWithHandle">
+      <li><input type='checkbox'/>list item text one <span class="my-handle">::</span></li>
+      <li>list item text two <span class="my-handle">::</span></li>
+      <li>list item text twofewafe <span class="my-handle">::</span></li>
+      <li><span class="my-handle">::</span> list item text twofewht4hh</li>
+      <li><span class="my-handle">::</span> list item text two gtr</li>
+      <li><span class="my-handle">::</span> list item text twohhgEGEEGG</li>
+      <li><span class="my-handle">::</span> list item text two 5453</li>
+      <li><span class="my-handle">::</span> list item text two53</li>
+      <li><span class="my-handle">::</span> list item text two3 53y reggggg</li>
+      <li><span class="my-handle">::</span> list item text two --- -</li>
+      <li><span class="my-handle">::</span> list item text two  ?? ?</li> 
+  </ul>
+
+  
+</body>
+<script>
+// List with handle
+Sortable.create(listWithHandle, {
+  handle: '.my-handle',
+  animation: 100,
+  scroll: false,
+});
+</script>
+</html>

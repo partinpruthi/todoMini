@@ -1,0 +1,26 @@
+# OMG Not Another TODO App #
+
+Simple TODO list app requirements:
+
+ * Web based.
+ * Easy to deploy.
+ * Self-hosted & FLOSS.
+ * Allows multiple people to update a list.
+
+This did not exist, so I have built it.
+
+### Deploy ###
+
+Copy the files to your PHP web hosting.
+
+Create a password file:
+
+	htpasswd -c /path/to/.htpasswd username
+
+Copy `./example.htaccess` to `.htaccess` and edit it.
+
+### Multi-user ###
+
+If you want multiple users, clone the directory for each user and create a unique login for each.
+
+To create a shared list, symlink one of the TODO list files into each user's data directory.
