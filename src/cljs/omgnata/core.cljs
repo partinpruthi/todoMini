@@ -16,8 +16,8 @@
 (defonce instance (atom 0))
 (defonce todos (atom {}))
 
-(def re-todo-finder #"([\ \t]+\*\s+\[.*\])")
-(def re-todo-parser #"\s+\[(.)\]\s+(.*)\n{0,1}([\s\S]*)")
+(def re-todo-finder #"[\ \t]*\*[\ \t]*\[(.*?)\]")
+(def re-todo-parser #"[\ \t]*\*[\ \t]*\[(.*?)\][\ \t]*(.*?)[\n$]([\s\S]*)")
 (def re-only-spaces #"^[\s\t]*$")
 
 ;; -------------------------
@@ -76,9 +76,7 @@
 
 (defn extract-todos [text]
   (when text
-    (let [slice-positions (vec (map #(first %) (re-pos re-todo-finder text)))
-          slice-positions (conj slice-positions (.-length text)) ; slice to the end of the file
-          slice-positions (if (= (first slice-positions) 0) slice-positions (into [0] slice-positions)) ; slice from the start of the file
+    (let [slice-positions (split-on-todos text)
           chunks (partition 2 1 slice-positions)
           todos (map #(parse-todo-chunk (.substr text (first %) (- (last %) (first %)))) chunks)]
       todos)))
