@@ -73,6 +73,13 @@
           todos (map #(parse-todo-chunk (.substr text (first %) (- (last %) (first %)))) chunks)]
       todos)))
 
+(defn reassemble-todos [todos]
+  (apply str (map
+         #(if (% :matched)
+            (str " * [" (if (% :checked) "x" " ") "] " (% :title) "\n" (% :details))
+            (% :source))
+         todos)))
+
 ;; -------------------------
 ;; Views
 
