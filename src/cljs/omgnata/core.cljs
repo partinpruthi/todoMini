@@ -16,6 +16,9 @@
 (defonce instance (atom 0))
 (defonce todos (atom {}))
 
+(def re-todo-finder #"(\s+\*\s+\[.*\])")
+(def re-todo-parser #"\s+\[(.)\]\s+(.*)\n{0,1}([\s\S]*)")
+
 ;; -------------------------
 ;; Functions
 
@@ -29,7 +32,6 @@
                    :handler #(put! c %)})
     c))
 
-
 (defn long-poller [instance-id]
   (go (loop [last-timestamp 0]
           (print "Long poller initiated:" instance-id)
@@ -42,6 +44,34 @@
                 (reset! todos (result "files")))
               (<! (timeout 1000))
               (recur (result "timestamp")))))))
+
+; http://stackoverflow.com/a/18737013/2131094
+(defn re-pos [re s]
+  (let [re (js/RegExp. (.-source re) "g")]
+    (loop [res {}]
+      (if-let [m (.exec re s)]
+        (recur (assoc res (.-index m) (first m)))
+        res))))
+
+(defn parse-todo-chunk [todo-chunk]
+  (let [[matched checked title details] (.exec (js/RegExp. re-todo-parser) todo-chunk)]
+    (if matched
+      {:matched true
+       :checked (not (or (= checked " ") (= checked "")))
+       :title title
+       :details details
+       :source todo-chunk}
+      {:matched false
+       :source todo-chunk})))
+
+(defn extract-todos [text]
+  (when text
+    (let [slice-positions (vec (map #(if (= (.indexOf (last %) "\n") 0) (inc (first %)) (first %)) (re-pos re-todo-finder text)))
+          slice-positions (conj slice-positions (.-length text)) ; slice to the end of the file
+          slice-positions (if (= (first slice-positions) 0) slice-positions (into [0] slice-positions)) ; slice from the start of the file
+          chunks (partition 2 1 slice-positions)
+          todos (map #(parse-todo-chunk (.substr text (first %) (- (last %) (first %)))) chunks)]
+      todos)))
 
 ;; -------------------------
 ;; Views
