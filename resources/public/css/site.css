@@ -43,16 +43,20 @@ li {
   margin-top: 0.25em;
   margin-bottom: 0.25em;
   white-space: nowrap;
+  border-radius: 3px;
+  padding: 0.25em;
 }
 
 .handle {
   cursor: move;
   cursor: -webkit-grabbing;
-  background-color: #eee;
+  background-color: #fff;
   padding-right: 0.5em;
   padding-left: 0.5em;
   border-radius: 3px;
   float: right;
+  display: inline-block;
+  border: 1px solid silver;
 }
 
 .checkbox {
@@ -65,4 +69,13 @@ li {
   margin-right: 0.5em;
   margin-bottom: -0.25em;
   padding-bottom: 0.5em;
+  background-color: white;
+}
+
+.oddeven-0 {
+  background-color: #f8f8f8;
+}
+
+.oddeven-1 {
+  background-color: #e8e8e8;
 }

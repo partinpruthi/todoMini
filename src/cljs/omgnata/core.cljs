@@ -100,9 +100,9 @@
    (doall (for [[fname text] @todos]
             [:ul {:key fname}
              [:li {} [:h3 fname]]
-             (for [todo (extract-todos text)]
-               (if (todo :matched)
-                 [:li {} [:span.handle "::"] [:span.checkbox {} (if (todo :checked) "✔" " ")] (todo :title)]))]))])
+             (map-indexed (fn [idx todo]
+                            [:li {:key (todo :index) :class (str "oddeven-" (mod idx 2))} [:span.handle "::"] [:span.checkbox {} (if (todo :checked) "✔" " ")] (todo :title)])
+                           (filter :matched (extract-todos text)))]))])
 
 (defn about-page []
   [:div [:h2 "About omgnata"]
