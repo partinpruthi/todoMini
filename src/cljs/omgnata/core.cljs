@@ -54,6 +54,15 @@
         (recur (assoc res (.-index m) (first m)))
         res))))
 
+(defn split-on-todos [todo-text]
+  (let [slice-positions (sort (conj
+                                ; find the position of all todos within the source text
+                                (vec (map #(first %) (re-pos re-todo-finder todo-text)))
+                                ; add the complete text length as the final marker
+                                (.-length todo-text)))]
+    ; add zero as the initial marker if not present
+    (if (= (first slice-positions) 0) slice-positions (into [0] slice-positions))))
+
 (defn parse-todo-chunk [todo-chunk]
   (let [[matched checked title details] (.exec (js/RegExp. re-todo-parser) todo-chunk)]
     (if matched
