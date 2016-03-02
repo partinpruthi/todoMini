@@ -18,6 +18,7 @@
 
 (def re-todo-finder #"([\ \t]+\*\s+\[.*\])")
 (def re-todo-parser #"\s+\[(.)\]\s+(.*)\n{0,1}([\s\S]*)")
+(def re-only-spaces #"^[\s\t]*$")
 
 ;; -------------------------
 ;; Functions
@@ -57,7 +58,7 @@
   (let [[matched checked title details] (.exec (js/RegExp. re-todo-parser) todo-chunk)]
     (if matched
       {:matched true
-       :checked (not (or (= checked " ") (= checked "")))
+       :checked (nil? (.exec (js/RegExp. re-only-spaces) checked))
        :title title
        :details details
        :source todo-chunk}
