@@ -2,7 +2,6 @@ body {
   font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
   max-width: 600px;
   margin: 0 auto;
-  padding-top: 72px;
   -webkit-font-smoothing: antialiased;
   font-size: 1.125em;
   color: #333;
@@ -31,4 +30,39 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+ul {
+  padding-left: 0px;
+}
+
+li {
+  list-style-type: none;
+  margin-left: 0.25em;
+  margin-right: 0.25em;
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+  white-space: nowrap;
+}
+
+.handle {
+  cursor: move;
+  cursor: -webkit-grabbing;
+  background-color: #eee;
+  padding-right: 0.5em;
+  padding-left: 0.5em;
+  border-radius: 3px;
+  float: right;
+}
+
+.checkbox {
+  border-radius: 3px;
+  border: 1px solid silver;
+  display: inline-block;
+  width: 1.5em;
+  height: 1em;
+  text-align: center;
+  margin-right: 0.5em;
+  margin-bottom: -0.25em;
+  padding-bottom: 0.5em;
 }

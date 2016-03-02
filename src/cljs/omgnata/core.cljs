@@ -92,14 +92,13 @@
 ;; Views
 
 (defn home-page []
-  [:div [:h2 "Welcome to omgnata"]
-   [:div [:a {:href "/about"} "go to about page"]]
+  [:div
    (doall (for [[fname text] @todos]
             [:ul {:key fname}
-             [:li {} fname]
-             (for [line (.split text "\n")]
-               (when (not (= line ""))
-                 [:li {} line]))]))])
+             [:li {} [:h3 fname]]
+             (for [todo (extract-todos text)]
+               (if (todo :matched)
+                 [:li {} [:span.handle "::"] [:span.checkbox {} (if (todo :checked) "✔" " ")] (todo :title)]))]))])
 
 (defn about-page []
   [:div [:h2 "About omgnata"]
