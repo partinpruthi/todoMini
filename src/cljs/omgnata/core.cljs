@@ -63,22 +63,26 @@
     ; add zero as the initial marker if not present
     (if (= (first slice-positions) 0) slice-positions (into [0] slice-positions))))
 
-(defn parse-todo-chunk [todo-chunk]
+(defn parse-todo-chunk [todo-chunk index]
   (let [[matched checked title details] (.exec (js/RegExp. re-todo-parser) todo-chunk)]
     (if matched
       {:matched true
        :checked (nil? (.exec (js/RegExp. re-only-spaces) checked))
        :title title
        :details details
-       :source todo-chunk}
+       :source todo-chunk
+       :index index}
       {:matched false
-       :source todo-chunk})))
+       :source todo-chunk
+       :index index})))
 
 (defn extract-todos [text]
   (when text
     (let [slice-positions (split-on-todos text)
           chunks (partition 2 1 slice-positions)
-          todos (map #(parse-todo-chunk (.substr text (first %) (- (last %) (first %)))) chunks)]
+          todos (map-indexed (fn [idx t]
+                               (parse-todo-chunk (.substr text (first t) (- (last t) (first t))) idx))
+                             chunks)]
       todos)))
 
 (defn reassemble-todos [todos]
