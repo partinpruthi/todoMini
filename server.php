@@ -2,18 +2,22 @@
 // https://github.com/panique/php-long-polling/blob/master/server/server.php
 /**
  * Infinite looping PHP long-poller.
+ * NOTE: this is unauthenticated so put it behing e.g. htaccess and HTTPS
  */
 
 // enable cors
 cors();
 
-// tell PHP it can timeout after 5 minutes
-set_time_limit(300);
-
 dirPoller("data");
 
 function dirPoller($datadir) {
-  while (true) {
+  // hang for a maximum of 30 seconds
+  $live_for = isset($_GET['live_for']) ? min((int)$_GET['live_for'], 180) : 30;
+  // tell PHP it can timeout after 30 seconds
+  set_time_limit($live_for);
+  ini_set("max_execution_time", $live_for);
+  // start the wait-poll loop
+  while ($live_for--) {
     // if ajax request has send a timestamp, then $last_ajax_call = timestamp, else $last_ajax_call = null
     $last_ajax_call = isset($_GET['timestamp']) ? (int)$_GET['timestamp'] : null;
     // get timestamp of when file has been changed the last time
@@ -34,7 +38,7 @@ function dirPoller($datadir) {
         break;
     } else {
         // wait for 1 sec (not very sexy as this blocks the PHP/Apache process, but that's how it goes)
-        sleep( 1 );
+        sleep(1);
         continue;
     }
   }
