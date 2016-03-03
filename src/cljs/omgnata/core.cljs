@@ -83,7 +83,7 @@
                    :handler #(put! c %)})
     c))
 
-(defn long-poller [instance-id]
+(defn long-poller [todos instance-id]
   (go (loop [last-timestamp 0]
           (print "Long poller initiated:" instance-id)
           ; don't fire off more than 1 time per second
@@ -129,7 +129,7 @@
 ;; Initialize app
 
 ; initiate the long-poller
-(long-poller (swap! instance inc))
+(long-poller todos (swap! instance inc))
 
 (defn mount-root []
   (reagent/render [current-page] (.getElementById js/document "app")))
