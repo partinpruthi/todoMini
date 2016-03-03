@@ -8,7 +8,23 @@
 // enable cors
 cors();
 
-dirPoller("data");
+$dir = "data";
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+  updateFile($_POST, $dir);
+} else {
+  dirPoller($dir);
+}
+
+function updateFile($update, $dir) {
+  $filename = basename($_POST["filename"]);
+  if (endsWith($filename, ".txt") && isset($_POST["content"])) {
+    file_put_contents($dir . "/" . $filename, $_POST["content"]);
+    echo json_encode("success");
+  } else {
+    echo json_encode("bad request");
+  }
+}
 
 function dirPoller($datadir) {
   // hang for a maximum of 30 seconds
