@@ -23,31 +23,6 @@
 ;; -------------------------
 ;; Functions
 
-;***** Network functions *****;
-
-(defn get-files [timestamp]
-  (let [c (chan)]
-    (ajax-request {:uri server-url
-                   :method :get
-                   :params {:timestamp timestamp}
-                   :with-credentials true
-                   :response-format (json-response-format)
-                   :handler #(put! c %)})
-    c))
-
-(defn long-poller [instance-id]
-  (go (loop [last-timestamp 0]
-          (print "Long poller initiated:" instance-id)
-          ; don't fire off more than 1 time per second
-          (let [[ok result] (<! (get-files last-timestamp))]
-            ; if we have fired off a new instance don't use this one
-            (when (= instance-id @instance)
-              (print "long-poller result:" ok result)
-              (when ok
-                (reset! todos (result "files")))
-              (<! (timeout 1000))
-              (recur (result "timestamp")))))))
-
 ;***** todo parsing *****;
 
 ; http://stackoverflow.com/a/18737013/2131094
@@ -95,6 +70,32 @@
             (str " * [" (if (% :checked) "x" " ") "] " (% :title) "\n" (% :details))
             (% :source))
          todos)))
+
+;***** Network functions *****;
+
+(defn get-files [timestamp]
+  (let [c (chan)]
+    (ajax-request {:uri server-url
+                   :method :get
+                   :params {:timestamp timestamp}
+                   :with-credentials true
+                   :response-format (json-response-format)
+                   :handler #(put! c %)})
+    c))
+
+(defn long-poller [instance-id]
+  (go (loop [last-timestamp 0]
+          (print "Long poller initiated:" instance-id)
+          ; don't fire off more than 1 time per second
+          (let [[ok result] (<! (get-files last-timestamp))]
+            ; if we have fired off a new instance don't use this one
+            (when (= instance-id @instance)
+              (print "long-poller result:" ok result)
+              (when ok
+                (reset! todos (result "files")))
+              (<! (timeout 1000))
+              (recur (result "timestamp")))))))
+
 
 ;; -------------------------
 ;; Views
