@@ -23,6 +23,8 @@
 ;; -------------------------
 ;; Functions
 
+;***** Network functions *****;
+
 (defn get-files [timestamp]
   (let [c (chan)]
     (ajax-request {:uri server-url
@@ -45,6 +47,8 @@
                 (reset! todos (result "files")))
               (<! (timeout 1000))
               (recur (result "timestamp")))))))
+
+;***** todo parsing *****;
 
 ; http://stackoverflow.com/a/18737013/2131094
 (defn re-pos [re s]
