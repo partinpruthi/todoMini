@@ -80,24 +80,29 @@
   (let [c (chan)]
     (ajax-request {:uri server-url
                    :method :get
-                   :params {:timestamp timestamp}
+                   :params {:timestamp timestamp
+                            :live_for (if (get-env :dev) 5 30)}
                    :with-credentials true
                    :response-format (json-response-format)
                    :handler #(put! c %)})
     c))
 
 (defn long-poller [todos instance-id]
+  (print "LONG POLLER")
   (go (loop [last-timestamp 0]
-          (print "Long poller initiated:" instance-id)
+          (print "Long poller initiated:" instance-id "timestamp:" last-timestamp)
           ; don't fire off more than 1 time per second
           (let [[ok result] (<! (get-files last-timestamp))]
             ; if we have fired off a new instance don't use this one
             (when (= instance-id @instance)
-              (print "long-poller result:" ok result)
-              (when ok
+              (when (not ok)
+                ; this happens with the poller timeout so we can't use it d'oh
+                )
+              (when (and ok (> (result "timestamp") last-timestamp))
+                (print "long-poller result:" last-timestamp ok result)
                 (reset! todos (transform-text-todos (result "files"))))
               (<! (timeout 1000))
-              (recur (result "timestamp")))))))
+              (recur (or (result "timestamp") last-timestamp)))))))
 
 ;***** event handlers *****;
 
