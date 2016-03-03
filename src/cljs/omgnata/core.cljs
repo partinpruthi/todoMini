@@ -96,6 +96,10 @@
               (<! (timeout 1000))
               (recur (result "timestamp")))))))
 
+;***** event handlers *****;
+
+(defn checkbox-handler [todos fname todo ev]
+  (swap! todos update-in [fname (todo :index) :checked] not))
 
 ;; -------------------------
 ;; Views
