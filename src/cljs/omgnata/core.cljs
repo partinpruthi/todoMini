@@ -115,7 +115,7 @@
              (map-indexed (fn [idx todo]
                             [:li {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
                              [:span.handle "::"]
-                             [:span.checkbox {:on-click (partial checkbox-handler todos fname todo)} (if (todo :checked) "✔" " ")]
+                             [:span.checkbox {:on-click (partial checkbox-handler todos fname todo)} (if (todo :checked) "✔" "\u00A0")]
                              (todo :title)])
                            (filter :matched todo-items))]))])
 
