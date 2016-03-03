@@ -59,17 +59,20 @@
   (when text
     (let [slice-positions (split-on-todos text)
           chunks (partition 2 1 slice-positions)
-          todos (map-indexed (fn [idx t]
+          todo-items (vec (map-indexed (fn [idx t]
                                (parse-todo-chunk (.substr text (first t) (- (last t) (first t))) idx))
-                             chunks)]
-      todos)))
+                             chunks))]
+      todo-items)))
 
-(defn reassemble-todos [todos]
+(defn transform-text-todos [todo-text-items]
+  (into {} (map (fn [[fname todo-text]] [fname (extract-todos todo-text)]) todo-text-items)))
+
+(defn reassemble-todos [todo-items]
   (apply str (map
          #(if (% :matched)
             (str " * [" (if (% :checked) "x" " ") "] " (% :title) "\n" (% :details))
             (% :source))
-         todos)))
+         todo-items)))
 
 ;***** Network functions *****;
 
@@ -92,7 +95,7 @@
             (when (= instance-id @instance)
               (print "long-poller result:" ok result)
               (when ok
-                (reset! todos (result "files")))
+                (reset! todos (transform-text-todos (result "files"))))
               (<! (timeout 1000))
               (recur (result "timestamp")))))))
 
@@ -106,12 +109,15 @@
 
 (defn home-page []
   [:div
-   (doall (for [[fname text] @todos]
+   (doall (for [[fname todo-items] @todos]
             [:ul {:key fname}
              [:li {} [:h3 fname]]
              (map-indexed (fn [idx todo]
-                            [:li {:key (todo :index) :class (str "oddeven-" (mod idx 2))} [:span.handle "::"] [:span.checkbox {} (if (todo :checked) "✔" " ")] (todo :title)])
-                           (filter :matched (extract-todos text)))]))])
+                            [:li {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
+                             [:span.handle "::"]
+                             [:span.checkbox {:on-click (partial checkbox-handler todos fname todo)} (if (todo :checked) "✔" " ")]
+                             (todo :title)])
+                           (filter :matched todo-items))]))])
 
 (defn about-page []
   [:div [:h2 "About omgnata"]
