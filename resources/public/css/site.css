@@ -60,6 +60,7 @@ li {
 }
 
 .checkbox {
+  cursor: pointer;
   border-radius: 3px;
   border: 1px solid #ddd;
   display: inline-block;
