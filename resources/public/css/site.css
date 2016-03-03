@@ -56,12 +56,12 @@ li {
   border-radius: 3px;
   float: right;
   display: inline-block;
-  border: 1px solid silver;
+  border: 1px solid #ddd;
 }
 
 .checkbox {
   border-radius: 3px;
-  border: 1px solid silver;
+  border: 1px solid #ddd;
   display: inline-block;
   width: 1.5em;
   height: 1em;
