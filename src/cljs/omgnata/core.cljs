@@ -87,8 +87,18 @@
                    :handler #(put! c %)})
     c))
 
+(defn update-file [fname text]
+  (ajax-request {:uri server-url
+                 :method :post
+                 :format (url-request-format)
+                 :params {:filename fname
+                          :content text}
+                 :with-credentials true
+                 :response-format (json-response-format)
+                 ; TODO: handle result
+                 :handler #(print "update-file result:" %)}))
+
 (defn long-poller [todos instance-id]
-  (print "LONG POLLER")
   (go (loop [last-timestamp 0]
           (print "Long poller initiated:" instance-id "timestamp:" last-timestamp)
           ; don't fire off more than 1 time per second
@@ -107,7 +117,8 @@
 ;***** event handlers *****;
 
 (defn checkbox-handler [todos fname todo ev]
-  (swap! todos update-in [fname (todo :index) :checked] not))
+  (swap! todos update-in [fname (todo :index) :checked] not)
+  (update-file fname (reassemble-todos (@todos fname))))
 
 ;; -------------------------
 ;; Views
