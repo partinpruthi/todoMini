@@ -138,18 +138,32 @@
   (swap! todos update-in [fname (todo :index) :checked] not)
   (update-file fname (reassemble-todos (@todos fname))))
 
+(defn delete-item-handler [todos todo ev]
+  
+  )
+
+(defn update-item-handler [todos todo ev]
+  
+  )
+
 ;; -------------------------
 ;; Views
 
-(defn component-todo-item [idx todo]
-  (let [edit-mode (atom false)]
-    [:li {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
-     (when (not @edit-mode)
-       [:span.handle "::"])
-     (when (not @edit-mode)
-       [:span.checkbox {:on-click (partial checkbox-handler todos @current-filename todo)} (if (todo :checked) "✔" "\u00A0")])
-     (when @edit-mode [:span "BLAH"])
-     [:div (todo :title)]]))
+(defn component-todo-item [todo]
+  (let [edit-mode (atom false)
+        item-title (atom (todo :title))]
+    (fn [todos idx todo]
+      [:li {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
+       (if @edit-mode
+         [:span {}
+          [:input {:value @item-title :on-change #(reset! item-title (-> % .-target .-value))}]
+          [:span.btn.delete-item {:on-click (partial delete-item-handler todos todo)} "D"] 
+          [:span.btn.update-item-done {:on-click (partial update-item-handler todos todo)} "✔"] 
+          [:span.btn.cancel-item-edit {:on-click #(swap! edit-mode not)} "✖"]]
+         [:span {}
+          [:span.handle {} "::"] 
+          [:span.checkbox {:on-click (partial checkbox-handler todos @current-filename todo)} (if (todo :checked) "✔" "\u00A0")] 
+          [:div {:on-double-click #(swap! edit-mode not)} (todo :title)]])])))
 
 (defn todo-page []
   (let [add-mode (atom false)
@@ -163,17 +177,24 @@
          [:div#add-item-container
           [:input {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
           [:span#add-item-done.btn {} "✔"]])
-       (doall (let [todo-items (@todos @current-filename)]
-                [:ul {}
-                 (doall (map-indexed (partial component-todo-item)
-                                     (filter :matched todo-items)))]))])))
+       [:ul {:key @current-filename}
+        (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todo) todos idx todo])
+                            (filter :matched (@todos @current-filename))))]])))
 
 (defn lists-page []
-  [:div
-   [:ul {}
-    (doall (map-indexed (fn [idx [filename todos]]
-                   (let [fname (no-extension filename)]
-                     [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2)) :on-click #(secretary/dispatch! (str "/todo/" fname))} fname])) @todos))]])
+  (let [add-mode (atom false)
+        new-item (atom "")]
+    (fn []
+      [:div
+       [:span#add-list.btn {:on-click #(swap! add-mode not)} (if @add-mode "✖" "+")]
+       (when @add-mode
+         [:div#add-item-container
+          [:input {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
+          [:span#add-item-done.btn {} "✔"]])
+       [:ul {}
+        (doall (map-indexed (fn [idx [filename todos]]
+                              (let [fname (no-extension filename)]
+                                [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2)) :on-click #(secretary/dispatch! (str "/todo/" fname))} fname])) @todos))]])))
 
 (defn current-page []
   [:div [(session/get :current-page)]])
