@@ -149,7 +149,7 @@
      (when (not @edit-mode)
        [:span.checkbox {:on-click (partial checkbox-handler todos @current-filename todo)} (if (todo :checked) "✔" "\u00A0")])
      (when @edit-mode [:span "BLAH"])
-     (todo :title)]))
+     [:div (todo :title)]]))
 
 (defn todo-page []
   (let [add-mode (atom false)
