@@ -162,7 +162,7 @@
        (when @add-mode
          [:div#add-item-container
           [:input {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
-          [:span.btn {} "✔"]])
+          [:span#add-item-done.btn {} "✔"]])
        (doall (let [todo-items (@todos @current-filename)]
                 [:ul {}
                  (doall (map-indexed (partial component-todo-item)

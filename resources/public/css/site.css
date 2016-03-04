@@ -58,15 +58,20 @@ h3 {
 }
 
 input {
-  width: 90%;
+  width: 80%;
 }
 
 #add-item {
   float: right;
+  margin-right: 0.5em;
 }
 
 #add-item-container {
   text-align: right;
+}
+
+#add-item-done {
+  margin-right: 0.5em;
 }
 
 li.todo-link {
