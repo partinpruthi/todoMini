@@ -27,6 +27,7 @@
 
 ; http://stackoverflow.com/a/18737013/2131094
 (defn re-pos [re s]
+  "Find all the positions in a string s that a regular expression re matches."
   (let [re (js/RegExp. (.-source re) "g")]
     (loop [res {}]
       (if-let [m (.exec re s)]
@@ -34,6 +35,7 @@
         res))))
 
 (defn split-on-todos [todo-text]
+  "Split up some text by positions of TODO list markers: * [ ] "
   (let [slice-positions (sort (conj
                                 ; find the position of all todos within the source text
                                 (vec (map #(first %) (re-pos re-todo-finder todo-text)))
@@ -43,6 +45,7 @@
     (if (= (first slice-positions) 0) slice-positions (into [0] slice-positions))))
 
 (defn parse-todo-chunk [todo-chunk index]
+  "Parse a chunk of text into a TODO list item: * [ ] My title... "
   (let [[matched checked title details] (.exec (js/RegExp. re-todo-parser) todo-chunk)]
     (if matched
       {:matched true
@@ -56,6 +59,7 @@
        :index index})))
 
 (defn extract-todos [text]
+  "Turn a chunk of text into an array of TODO list state dictionaries."
   (when text
     (let [slice-positions (split-on-todos text)
           chunks (partition 2 1 slice-positions)
@@ -65,9 +69,12 @@
       todo-items)))
 
 (defn transform-text-todos [todo-text-items]
+  "Given a hash-map of {:filename text :filename-2 text-2}
+  replace the text items with their parsed TODO list state dictionaries."
   (into {} (map (fn [[fname todo-text]] [fname (extract-todos todo-text)]) todo-text-items)))
 
 (defn reassemble-todos [todo-items]
+  "Take an array of TODO list state dictionaries and then them back into text blob."
   (apply str (map
          #(if (% :matched)
             (str " * [" (if (% :checked) "x" " ") "] " (% :title) "\n" (% :details))
@@ -77,6 +84,9 @@
 ;***** Network functions *****;
 
 (defn get-files [timestamp]
+  "Ask the server for a list of text files.
+  Server blocks if none since timestamp.
+  Returns a dictionary of :filename to text mappings."
   (let [c (chan)]
     (ajax-request {:uri server-url
                    :method :get
@@ -88,6 +98,7 @@
     c))
 
 (defn update-file [fname text]
+  "Ask the server to update a particular text file with text contents."
   (ajax-request {:uri server-url
                  :method :post
                  :format (url-request-format)
@@ -99,6 +110,7 @@
                  :handler #(print "update-file result:" %)}))
 
 (defn long-poller [todos instance-id]
+  "Continuously poll the server updating the todos atom when the textfile data changes."
   (go (loop [last-timestamp 0]
           (print "Long poller initiated:" instance-id "timestamp:" last-timestamp)
           ; don't fire off more than 1 time per second
@@ -117,6 +129,7 @@
 ;***** event handlers *****;
 
 (defn checkbox-handler [todos fname todo ev]
+  "When the user clicks a checkbox, update the state."
   (swap! todos update-in [fname (todo :index) :checked] not)
   (update-file fname (reassemble-todos (@todos fname))))
 
