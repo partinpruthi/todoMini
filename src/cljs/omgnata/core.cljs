@@ -143,7 +143,7 @@
 
 (defn todo-page []
   [:div 
-   [:button {:on-click #(secretary/dispatch! "/")} "◀"]
+   [:span.back {:on-click #(secretary/dispatch! "/")} "◀"]
    [:h3 @current-filename]
    (doall (let [todo-items (@todos @current-filename)]
             [:ul {}
@@ -156,11 +156,10 @@
 
 (defn lists-page []
   [:div
-   [:div [:a {:href "/"} "go to the lists page"]]
    [:ul {}
-    (for [[filename todos] @todos]
-      (let [fname (no-extension filename)]
-        [:li.todo-link {:key filename :on-click #(secretary/dispatch! (str "/todo/" fname))} fname]))]])
+    (map-indexed (fn [idx [filename todos]]
+                   (let [fname (no-extension filename)]
+                     [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2)) :on-click #(secretary/dispatch! (str "/todo/" fname))} fname])) @todos)]])
 
 (defn current-page []
   [:div [(session/get :current-page)]])

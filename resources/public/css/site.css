@@ -32,6 +32,34 @@ a:hover {
   text-decoration: underline;
 }
 
+h3 {
+  display: inline-block;
+  margin: 0px;
+  margin-left: 0.5em;
+  font-size: 1em;
+  position: relative;
+  top: 0.125em;
+}
+
+.back {
+  background: none;
+  border: 1px solid #ddd;
+  display: inline-block;
+  border-radius: 3px;
+  margin-left: 0.5em;
+  margin-top: 0.5em;
+  padding-bottom: 0.75em;
+  width: 1.75em;
+  height: 1em;
+  text-align: center;
+  cursor: pointer;
+}
+
+li.todo-link {
+  cursor: pointer;
+  padding-left: 1em;
+}
+
 ul {
   padding-left: 0px;
 }
