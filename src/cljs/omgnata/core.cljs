@@ -107,7 +107,7 @@
   (ajax-request {:uri server-url
                  :method :post
                  :format (url-request-format)
-                 :params {:filename fname
+                 :params {:filename (str fname ".txt")
                           :content text}
                  :with-credentials true
                  :response-format (json-response-format)
