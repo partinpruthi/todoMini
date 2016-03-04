@@ -15,6 +15,7 @@
 
 (defonce instance (atom 0))
 (defonce todos (atom {}))
+(defonce current-filename (atom nil))
 
 (def re-todo-finder #"[\ \t]*\*[\ \t]*\[(.*?)\]")
 (def re-todo-parser #"[\ \t]*\*[\ \t]*\[(.*?)\][\ \t]*(.*?)[\n$]([\s\S]*)")
@@ -22,6 +23,10 @@
 
 ;; -------------------------
 ;; Functions
+
+;***** remove extension *****;
+
+(defn no-extension [s] (.replace s ".txt" ""))
 
 ;***** todo parsing *****;
 
@@ -71,7 +76,7 @@
 (defn transform-text-todos [todo-text-items]
   "Given a hash-map of {:filename text :filename-2 text-2}
   replace the text items with their parsed TODO list state dictionaries."
-  (into {} (map (fn [[fname todo-text]] [fname (extract-todos todo-text)]) todo-text-items)))
+  (into {} (map (fn [[fname todo-text]] [(no-extension fname) (extract-todos todo-text)]) todo-text-items)))
 
 (defn reassemble-todos [todo-items]
   "Take an array of TODO list state dictionaries and then them back into text blob."
@@ -136,21 +141,26 @@
 ;; -------------------------
 ;; Views
 
-(defn home-page []
-  [:div
-   (doall (for [[fname todo-items] @todos]
-            [:ul {:key fname}
-             [:li {} [:h3 fname]]
+(defn todo-page []
+  [:div 
+   [:button {:on-click #(secretary/dispatch! "/")} "◀"]
+   [:h3 @current-filename]
+   (doall (let [todo-items (@todos @current-filename)]
+            [:ul {}
              (map-indexed (fn [idx todo]
                             [:li {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
                              [:span.handle "::"]
-                             [:span.checkbox {:on-click (partial checkbox-handler todos fname todo)} (if (todo :checked) "✔" "\u00A0")]
+                             [:span.checkbox {:on-click (partial checkbox-handler todos @current-filename todo)} (if (todo :checked) "✔" "\u00A0")]
                              (todo :title)])
                            (filter :matched todo-items))]))])
 
-(defn about-page []
-  [:div [:h2 "About omgnata"]
-   [:div [:a {:href "/"} "go to the home page"]]])
+(defn lists-page []
+  [:div
+   [:div [:a {:href "/"} "go to the lists page"]]
+   [:ul {}
+    (for [[filename todos] @todos]
+      (let [fname (no-extension filename)]
+        [:li.todo-link {:key filename :on-click #(secretary/dispatch! (str "/todo/" fname))} fname]))]])
 
 (defn current-page []
   [:div [(session/get :current-page)]])
@@ -158,11 +168,14 @@
 ;; -------------------------
 ;; Routes
 
-(secretary/defroute "/" []
-  (session/put! :current-page #'home-page))
 
-(secretary/defroute "/about" []
-  (session/put! :current-page #'about-page))
+(secretary/defroute "/" []
+  (session/put! :current-page #'lists-page))
+
+(secretary/defroute "/todo/:fname" [fname]
+  (print fname)
+  (reset! current-filename fname)
+  (session/put! :current-page #'todo-page))
 
 ;; -------------------------
 ;; Initialize app
