@@ -73,6 +73,10 @@ input {
   margin-right: 0.5em;
 }
 
+#clear-completed {
+  float: right;
+}
+
 #add-item-container {
   text-align: right;
 }

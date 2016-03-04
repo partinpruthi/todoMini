@@ -157,7 +157,7 @@
        (if @edit-mode
          [:span {}
           [:input {:value @item-title :on-change #(reset! item-title (-> % .-target .-value))}]
-          [:span.btn.delete-item {:on-click (partial delete-item-handler todos todo)} "D"] 
+          [:span.btn.delete-item {:on-click (partial delete-item-handler todos todo)} "⛔"] 
           [:span.btn.update-item-done {:on-click (partial update-item-handler todos todo)} "✔"] 
           [:span.btn.cancel-item-edit {:on-click #(swap! edit-mode not)} "✖"]]
          [:span {}
@@ -173,6 +173,7 @@
        [:span.btn {:on-click #(secretary/dispatch! "/")} "◀"]
        [:h3 @current-filename]
        [:span#add-item.btn {:on-click #(swap! add-mode not)} (if @add-mode "✖" "+")]
+       [:span#clear-completed.btn {} "⛔"]
        (when @add-mode
          [:div#add-item-container
           [:input {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
