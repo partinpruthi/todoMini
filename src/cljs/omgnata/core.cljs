@@ -11,7 +11,7 @@
 
 (enable-console-print!)
 
-(def server-url (if (get-env :dev) "http://localhost:8000/server.php" "server.php"))
+(def server-url (if (get-env :dev) (str (.replace (-> js/document .-location .-href) ":3449" ":8000") "server.php") "server.php"))
 
 (defonce instance (atom 0))
 (defonce todos (atom {}))
