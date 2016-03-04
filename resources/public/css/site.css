@@ -4,12 +4,13 @@ body {
   margin: 0 auto;
   -webkit-font-smoothing: antialiased;
   font-size: 1.125em;
-  color: #333;
+  color: #ddd;
   line-height: 1.5em;
+  background-image: url(../img/stardust.png);
 }
 
 h1, h2, h3 {
-  color: #000;
+  color: #aaa;
 }
 h1 {
   font-size: 2.5em
@@ -42,8 +43,7 @@ h3 {
 }
 
 .btn {
-  border: 1px solid #ddd;
-  background-color: #eee;
+  color: white;
   display: inline-block;
   border-radius: 3px;
   margin-left: 0.5em;
@@ -53,6 +53,8 @@ h3 {
   height: 1em;
   text-align: center;
   cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 input {
@@ -82,7 +84,6 @@ li {
   margin-right: 0.25em;
   margin-top: 0.25em;
   margin-bottom: 0.25em;
-  white-space: nowrap;
   border-radius: 3px;
   padding: 0.25em;
 }
@@ -90,32 +91,34 @@ li {
 .handle {
   cursor: move;
   cursor: -webkit-grabbing;
-  background-color: #fff;
+  color: white;
   padding-right: 0.5em;
   padding-left: 0.5em;
   border-radius: 3px;
   float: right;
   display: inline-block;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .checkbox {
+  color: white;
   cursor: pointer;
   border-radius: 3px;
-  border: 1px solid #ddd;
   display: inline-block;
   width: 1.5em;
   height: 1em;
   text-align: center;
   margin-right: 0.5em;
   padding-bottom: 0.5em;
-  background-color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .oddeven-0 {
-  background-color: #f8f8f8;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .oddeven-1 {
-  background-color: #e8e8e8;
+  background-color: rgba(255, 255, 255, 0.2);
 }
