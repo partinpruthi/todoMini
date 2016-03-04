@@ -42,8 +42,8 @@ h3 {
 }
 
 .back {
-  background: none;
   border: 1px solid #ddd;
+  background-color: #eee;
   display: inline-block;
   border-radius: 3px;
   margin-left: 0.5em;

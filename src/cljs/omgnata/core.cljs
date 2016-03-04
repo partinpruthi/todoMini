@@ -147,19 +147,19 @@
    [:h3 @current-filename]
    (doall (let [todo-items (@todos @current-filename)]
             [:ul {}
-             (map-indexed (fn [idx todo]
+             (doall (map-indexed (fn [idx todo]
                             [:li {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
                              [:span.handle "::"]
                              [:span.checkbox {:on-click (partial checkbox-handler todos @current-filename todo)} (if (todo :checked) "✔" "\u00A0")]
                              (todo :title)])
-                           (filter :matched todo-items))]))])
+                           (filter :matched todo-items)))]))])
 
 (defn lists-page []
   [:div
    [:ul {}
-    (map-indexed (fn [idx [filename todos]]
+    (doall (map-indexed (fn [idx [filename todos]]
                    (let [fname (no-extension filename)]
-                     [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2)) :on-click #(secretary/dispatch! (str "/todo/" fname))} fname])) @todos)]])
+                     [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2)) :on-click #(secretary/dispatch! (str "/todo/" fname))} fname])) @todos))]])
 
 (defn current-page []
   [:div [(session/get :current-page)]])
