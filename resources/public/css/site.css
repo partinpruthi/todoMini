@@ -41,7 +41,7 @@ h3 {
   top: 0.125em;
 }
 
-.back {
+.btn {
   border: 1px solid #ddd;
   background-color: #eee;
   display: inline-block;
@@ -53,6 +53,18 @@ h3 {
   height: 1em;
   text-align: center;
   cursor: pointer;
+}
+
+input {
+  width: 90%;
+}
+
+#add-item {
+  float: right;
+}
+
+#add-item-container {
+  text-align: right;
 }
 
 li.todo-link {

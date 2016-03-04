@@ -141,18 +141,32 @@
 ;; -------------------------
 ;; Views
 
+(defn component-todo-item [idx todo]
+  (let [edit-mode (atom false)]
+    [:li {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
+     (when (not @edit-mode)
+       [:span.handle "::"])
+     (when (not @edit-mode)
+       [:span.checkbox {:on-click (partial checkbox-handler todos @current-filename todo)} (if (todo :checked) "✔" "\u00A0")])
+     (when @edit-mode [:span "BLAH"])
+     (todo :title)]))
+
 (defn todo-page []
-  [:div 
-   [:span.back {:on-click #(secretary/dispatch! "/")} "◀"]
-   [:h3 @current-filename]
-   (doall (let [todo-items (@todos @current-filename)]
-            [:ul {}
-             (doall (map-indexed (fn [idx todo]
-                            [:li {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
-                             [:span.handle "::"]
-                             [:span.checkbox {:on-click (partial checkbox-handler todos @current-filename todo)} (if (todo :checked) "✔" "\u00A0")]
-                             (todo :title)])
-                           (filter :matched todo-items)))]))])
+  (let [add-mode (atom false)
+        new-item (atom "")]
+    (fn []
+      [:div 
+       [:span.btn {:on-click #(secretary/dispatch! "/")} "◀"]
+       [:h3 @current-filename]
+       [:span#add-item.btn {:on-click #(swap! add-mode not)} (if @add-mode "✖" "+")]
+       (when @add-mode
+         [:div#add-item-container
+          [:input {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
+          [:span.btn {} "✔"]])
+       (doall (let [todo-items (@todos @current-filename)]
+                [:ul {}
+                 (doall (map-indexed (partial component-todo-item)
+                                     (filter :matched todo-items)))]))])))
 
 (defn lists-page []
   [:div
