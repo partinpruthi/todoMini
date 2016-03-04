@@ -17,9 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 function updateFile($update, $dir) {
-  $filename = basename($_POST["filename"]);
-  if (endsWith($filename, ".txt") && isset($_POST["content"])) {
-    file_put_contents($dir . "/" . $filename, $_POST["content"]);
+  $filename = basename($update["filename"]);
+  if (endsWith($filename, ".txt") && isset($update["content"])) {
+    file_put_contents($dir . "/" . $filename, $update["content"]);
     echo json_encode("success");
   } else {
     echo json_encode("bad request");
@@ -53,7 +53,7 @@ function dirPoller($datadir) {
         // leave this loop step
         break;
     } else {
-        // wait for 1 sec (not very sexy as this blocks the PHP/Apache process, but that's how it goes)
+        // block for 1 second
         sleep(1);
         continue;
     }
