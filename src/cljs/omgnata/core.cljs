@@ -25,10 +25,6 @@
 
 (defn no-extension [s] (.replace s ".txt" ""))
 
-(defn index-of [coll value]
-  (some (fn [[idx item]] (if (= value item) idx))
-        (map-indexed vector coll)))
-
 ;***** todo parsing *****;
 
 ; http://stackoverflow.com/a/18737013/2131094
@@ -58,9 +54,11 @@
        :checked (nil? (.exec (js/RegExp. re-only-spaces) checked))
        :title title
        :details details
-       :source todo-chunk}
+       :source todo-chunk
+       :index index}
       {:matched false
-       :source todo-chunk})))
+       :source todo-chunk
+       :index index})))
 
 (defn extract-todos [text]
   "Turn a chunk of text into an array of TODO list state dictionaries."
@@ -182,7 +180,7 @@
   (let [edit-mode (atom false)
         item-title (atom (todo :title))]
     (fn [todos idx todo]
-      [:li.todo-line {:key (index-of (@todos filename) todo) :class (str "oddeven-" (mod idx 2))}
+      [:li.todo-line {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
        (if @edit-mode
          [:span.edit-mode {}
           [component-input-with-focus item-title edit-mode]
@@ -207,7 +205,7 @@
           [:textarea.add-item-text {:on-change #(reset! new-item-title (-> % .-target .-value)) :value @new-item-title}]
           [:span#add-item-done.btn {:on-click (partial add-todo-item-handler todos filename new-item-title add-mode) :class "fa fa-check-circle"}]])
        [:ul {:key filename}
-        (doall (map-indexed (fn [idx todo] ^{:key (index-of (@todos filename) todo)} [(partial component-todo-item filename todo) todos idx todo])
+        (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item filename todo) todos idx todo])
                             (filter :matched (@todos filename))))]])))
 
 (defn lists-page [todos]
