@@ -83,6 +83,10 @@
             (% :source))
          todo-items)))
 
+(defn re-compute-indices [todo-items]
+  (into {} (for [[fname todo-list] todo-items]
+             [fname (vec (map-indexed (fn [idx t] (assoc t :index idx)) todo-list))])))
+
 ;***** Network functions *****;
 
 (defn get-files [timestamp]
@@ -135,7 +139,9 @@
   "When the user clicks a checkbox, update the state."
   (let [todo-list (@todos fname)]
     (update-file fname (reassemble-todos
-                         ((swap! todos update-in [fname (index-of todo-list todo) :checked] not)
+                         ((swap! todos #(-> %
+                              (update-in [fname (todo :index) :checked] not)
+                              (re-compute-indices)))
                           fname)))))
 
 (defn delete-item-handler [todos todo ev]
@@ -144,12 +150,18 @@
 (defn update-item-handler [todos fname todo item-title ev]
   (let [todo-list (@todos fname)]
     (update-file fname (reassemble-todos
-                         ((swap! todos assoc-in [fname (index-of todo-list todo) :title] @item-title)
+                         ((swap! todos #(-> %
+                              (assoc-in [fname (todo :index) :title] @item-title)
+                              (re-compute-indices)))
                           fname)))))
 
 (defn add-todo-item-handler [todos fname new-item-title add-mode ev]
   (update-file fname (reassemble-todos
-                       ((swap! todos update-in [fname] (fn [todo-list new-item] (print todo-list new-item) (into [new-item] todo-list)) {:title @new-item-title :checked false :matched true}) fname)))
+                       ((swap! todos 
+                               #(-> %
+                                    (update-in [fname] (fn [todo-list new-item] (into [new-item] todo-list)) {:title @new-item-title :checked false :matched true})
+                                    (re-compute-indices)))
+                        fname)))
   (reset! new-item-title "") 
   (swap! add-mode not))
 
