@@ -1,12 +1,29 @@
+html {
+  height: 100%;
+  padding: 0px;
+  margin: 0px;
+  background-image: url(../img/stardust.png);
+}
+
 body {
   font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
-  max-width: 600px;
-  margin: 0 auto;
   -webkit-font-smoothing: antialiased;
   font-size: 1.125em;
   color: #ddd;
   line-height: 1.5em;
-  background-image: url(../img/stardust.png);
+  min-height: 100%;
+  padding: 0px;
+  padding-bottom: 0em;
+  margin: 0px;
+  background: linear-gradient(to bottom, rgba(30, 82, 142, 0.1) 0%, rgba(38, 88, 137, 0.2) 50%, rgba(157, 166, 113, 0.3) 100%);
+  background-attachment: fixed;
+}
+
+#app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0px;
+  padding-bottom: 0.25em;
 }
 
 h1, h2, h3 {
@@ -102,6 +119,7 @@ li {
   margin-bottom: 0.25em;
   border-radius: 3px;
   padding: 0.25em;
+  padding-bottom: 0.25em;
 }
 
 .handle {
@@ -137,11 +155,10 @@ li {
 }
 
 .oddeven-0 {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .oddeven-1 {
-  background-color: rgba(255, 255, 255, 0.2);
 }
 
 /*** loader animation ***/
