@@ -263,6 +263,9 @@
 ; initiate the long-poller
 (long-poller todo-lists (swap! instance inc))
 
+; tell react to handle touch events
+(.initializeTouchEvents js/React true)
+
 (defn mount-root []
   (reagent/render [current-page] (.getElementById js/document "app")))
 
