@@ -161,7 +161,7 @@
           [:span.btn.delete-item {:on-click (partial delete-item-handler todos todo) :class "fa fa-trash"}]]
          [:span {}
           [:span.handle.btn {:class "fa fa-sort"}] 
-          [:span.checkbox.btn {:on-click (partial checkbox-handler todos @current-filename todo) :class (if (todo :checked) "fa fa-circle" "fa fa-check-circle")}] 
+          [:span.checkbox.btn {:on-click (partial checkbox-handler todos @current-filename todo) :class (if (todo :checked) "fa fa-check-circle" "fa fa-circle")}] 
           [:div.todo-text {:on-double-click #(swap! edit-mode not)} (todo :title)]])])))
 
 (defn todo-page []
