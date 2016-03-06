@@ -149,6 +149,12 @@
                          ((swap! todos assoc-in [fname (index-of todo-list todo) :title] @item-title)
                           fname)))))
 
+(defn add-todo-item-handler [todos fname new-item-title add-mode ev]
+  (update-file fname (reassemble-todos
+                       ((swap! todos update-in [fname] (fn [todo-list new-item] (print todo-list new-item) (into [new-item] todo-list)) {:title @new-item-title :checked false :matched true}) fname)))
+  (reset! new-item-title "") 
+  (swap! add-mode not))
+
 ;; -------------------------
 ;; Views
 
@@ -189,7 +195,7 @@
 
 (defn todo-page [todos filename]
   (let [add-mode (atom false)
-        new-item (atom "")]
+        new-item-title (atom "")]
     (fn []
       [:div.todo-page
        [:span#back.btn {:on-click #(secretary/dispatch! "/") :class "fa fa-chevron-circle-left"}]
@@ -198,8 +204,8 @@
        [:span#clear-completed.btn {:class "fa fa-trash"}]
        (when @add-mode
          [:div#add-item-container
-          [:textarea.add-item-text {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
-          [:span#add-item-done.btn {:class "fa fa-check-circle"}]])
+          [:textarea.add-item-text {:on-change #(reset! new-item-title (-> % .-target .-value)) :value @new-item-title}]
+          [:span#add-item-done.btn {:on-click (partial add-todo-item-handler todos filename new-item-title add-mode) :class "fa fa-check-circle"}]])
        [:ul {:key filename}
         (doall (map-indexed (fn [idx todo] ^{:key (index-of (@todos filename) todo)} [(partial component-todo-item filename todo) todos idx todo])
                             (filter :matched (@todos filename))))]])))
