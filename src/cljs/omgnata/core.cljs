@@ -142,9 +142,9 @@
   
   )
 
-(defn update-item-handler [todos todo ev]
-  
-  )
+(defn update-item-handler [todos fname todo item-title ev]
+  (swap! todos assoc-in [fname (todo :index) :title] @item-title)
+  (update-file fname (reassemble-todos (@todos fname))))
 
 ;; -------------------------
 ;; Views
@@ -157,7 +157,7 @@
        (if @edit-mode
          [:span.edit-mode {}
           [:textarea.edit-item-text {:value @item-title :on-change #(reset! item-title (-> % .-target .-value))}]
-          [:span.btn.update-item-done {:on-click (partial update-item-handler todos todo) :class "fa fa-check-circle"}] 
+          [:span.btn.update-item-done {:on-click (partial update-item-handler todos @current-filename todo item-title) :class "fa fa-check-circle"}] 
           [:span.btn.delete-item {:on-click (partial delete-item-handler todos todo) :class "fa fa-trash"}]]
          [:span {}
           [:span.handle.btn {:class "fa fa-sort"}] 
