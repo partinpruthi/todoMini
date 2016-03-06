@@ -110,13 +110,13 @@ li {
   min-height: 3em;
 }
 
-li.todo-line span {
+li.todo-line > span {
   display: block;
   padding-left: 1em;
   padding-top: -1em;
 }
 
-li.todo-line span.edit-mode {
+li.todo-line > span.edit-mode {
 }
 
 .list-title {
@@ -158,7 +158,7 @@ li.todo-line span.edit-mode {
 }
 
 .delete-item {
-  margin-left: -1em;
+  margin-left: -0.1em;
 }
 
 .edit-item-text {
@@ -186,7 +186,7 @@ li.todo-line span.edit-mode {
 .checkbox {
   display: inline-block;
   float: left;
-  margin-left: -1.2em;
+  margin-left: -0.25em;
 }
 
 .todo-text {
