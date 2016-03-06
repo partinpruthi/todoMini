@@ -87,6 +87,9 @@
   (into {} (for [[fname todo-list] todo-items]
              [fname (vec (map-indexed (fn [idx t] (assoc t :index idx)) todo-list))])))
 
+(defn remove-item [todo-items fname todo]
+  (update-in todo-items [fname] (fn [todo-list] (remove #(= (% :index) (todo :index)) todo-list))))
+
 ;***** Network functions *****;
 
 (defn get-files [timestamp]
@@ -144,8 +147,12 @@
                               (re-compute-indices)))
                           fname)))))
 
-(defn delete-item-handler [todos todo ev]
-  )
+(defn delete-item-handler [todos fname todo ev]
+  (update-file fname (reassemble-todos
+                         ((swap! todos #(-> %
+                              (remove-item fname todo)
+                              (re-compute-indices)))
+                          fname))))
 
 (defn update-item-handler [todos fname todo item-title ev]
   (let [todo-list (@todos fname)]
@@ -197,7 +204,7 @@
          [:span.edit-mode {}
           [component-input-with-focus item-title edit-mode]
           [:span.btn.update-item-done {:on-click (partial update-item-handler todos filename todo item-title) :class "fa fa-check-circle"}] 
-          [:span.btn.delete-item {:on-click (partial delete-item-handler todos todo) :class "fa fa-trash"}]]
+          [:span.btn.delete-item {:on-click (partial delete-item-handler todos filename todo) :class "fa fa-trash"}]]
          [:span {}
           [:span.handle.btn {:class "fa fa-sort"}] 
           [:span.checkbox.btn {:on-click (partial checkbox-handler todos filename todo) :class (if (todo :checked) "fa fa-check-circle" "fa fa-circle")}] 
