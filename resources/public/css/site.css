@@ -1,4 +1,4 @@
-@import url("base.css");
+@import url("../font-awesome/css/font-awesome.min.css");
 
 html {
   height: 100%;
@@ -40,7 +40,12 @@ h2 {
 }
 
 h3 {
-  font-size: 1.5em
+  font-size: 1em
+}
+
+div {
+  padding: 0px;
+  margin: 0px;
 }
 
 a {
@@ -52,65 +57,44 @@ a:hover {
   text-decoration: underline;
 }
 
-h3 {
-  display: inline-block;
-  margin: 0px;
-  margin-left: 0.5em;
-  font-size: 1em;
-  position: relative;
-  top: 0.125em;
-}
-
 .btn {
-  color: white;
+  color: #aaa;
   display: inline-block;
-  border-radius: 3px;
-  margin-left: 0.5em;
-  margin-top: 0.5em;
-  padding-bottom: 0.75em;
-  width: 1.75em;
-  height: 1em;
-  text-align: center;
+  background: none;
+  border: none;
+  margin: 0.25em;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background-color: rgba(255, 255, 255, 0.2);
+  font-size: 2.5em;
 }
 
-input {
-  width: 75%;
+input, textarea {
+  width: 100%;
+  box-sizing: border-box; 
   font-size: 1em;
   font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
   color: #333;
   border-radius: 3px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background-color: rgba(255, 255, 255, 0.7);
-  padding: 0.25em;
-}
+  display: block;
 
-#add-item {
-  float: right;
-  margin-right: 0.5em;
-}
-
-#clear-completed {
-  float: right;
-}
-
-#add-item-container {
-  text-align: right;
-}
-
-#add-item-done {
-  margin-right: 0.5em;
+  padding: 0.5em;
+  border-radius: 3px;
+  display: block;
+  min-height: 3em;
 }
 
 li.todo-link {
   cursor: pointer;
   padding-left: 1em;
+  padding-bottom: 0em;
+  padding-top: 1.25em;
+  font-weight: bold;
 }
 
 ul {
   padding-left: 0px;
+  margin-top: 0px;
 }
 
 li {
@@ -122,38 +106,94 @@ li {
   border-radius: 3px;
   padding: 0.25em;
   padding-bottom: 0.25em;
+  display: block;
+  min-height: 3em;
+}
+
+li.todo-line span {
+  display: block;
+  padding-left: 1em;
+  padding-top: -1em;
+}
+
+li.todo-line span.edit-mode {
+}
+
+.list-title {
+  display: inline-block;
+  margin: 0px;
+  margin-left: 0.5em;
+  font-size: 1em;
+  position: relative;
+  top: -0.5em;
+  color: #ddd;
+}
+
+#add-item {
+  float: right;
+  margin-right: 0.3em;
+}
+
+#clear-completed {
+  float: right;
+}
+
+#add-item-container {
+  padding: 0px;
+  margin: 0px;
+  margin: 1em;
+}
+
+#add-item-done {
+  display: block;
+  text-align: right;
+}
+
+#back, #add-list {
+  margin-left: 0.275em;
+}
+
+.update-item-done {
+  float: right;
+}
+
+.delete-item {
+  margin-left: -1em;
+}
+
+.edit-item-text {
+  margin-top: 0.5em;
+  margin-left: -0.5em;
+}
+
+.add-new-text {
+  
+}
+
+.delete-list {
+  float: right;
+  margin-top: -0.2em;
 }
 
 .handle {
   cursor: move;
   cursor: -webkit-grabbing;
-  color: white;
-  padding-right: 0.5em;
-  padding-left: 0.5em;
-  border-radius: 3px;
   float: right;
   display: inline-block;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background-color: rgba(255, 255, 255, 0.2);
+  margin-right: 0.125em;
 }
 
 .checkbox {
-  color: white;
-  cursor: pointer;
-  border-radius: 3px;
   display: inline-block;
-  width: 1.5em;
-  height: 1em;
-  text-align: center;
-  margin-right: 0.5em;
-  padding-bottom: 0.5em;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background-color: rgba(255, 255, 255, 0.2);
   float: left;
+  margin-left: -1.2em;
 }
 
-.delete-item {
-  float: right;
+.todo-text {
+  display: block;
+  padding-bottom: 1em;
+  margin-left: 2.5em;
+  padding-top: 1em;
 }
 
 .oddeven-0 {

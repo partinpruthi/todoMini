@@ -153,31 +153,30 @@
   (let [edit-mode (atom false)
         item-title (atom (todo :title))]
     (fn [todos idx todo]
-      [:li {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
+      [:li.todo-line {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
        (if @edit-mode
+         [:span.edit-mode {}
+          [:textarea.edit-item-text {:value @item-title :on-change #(reset! item-title (-> % .-target .-value))}]
+          [:span.btn.update-item-done {:on-click (partial update-item-handler todos todo) :class "fa fa-check-circle"}] 
+          [:span.btn.delete-item {:on-click (partial delete-item-handler todos todo) :class "fa fa-trash"}]]
          [:span {}
-          [:input {:value @item-title :on-change #(reset! item-title (-> % .-target .-value))}]
-          [:span.btn.delete-item {:on-click (partial delete-item-handler todos todo)} "⛔"] 
-          [:span.btn.update-item-done {:on-click (partial update-item-handler todos todo)} "✔"] 
-          [:span.btn.cancel-item-edit {:on-click #(swap! edit-mode not)} "✖"]]
-         [:span {}
-          [:span.handle {} "::"] 
-          [:span.checkbox {:on-click (partial checkbox-handler todos @current-filename todo)} (if (todo :checked) "✔" "\u00A0")] 
-          [:div {:on-double-click #(swap! edit-mode not)} (todo :title)]])])))
+          [:span.handle.btn {:class "fa fa-sort"}] 
+          [:span.checkbox.btn {:on-click (partial checkbox-handler todos @current-filename todo) :class (if (todo :checked) "fa fa-circle" "fa fa-check-circle")}] 
+          [:div.todo-text {:on-double-click #(swap! edit-mode not)} (todo :title)]])])))
 
 (defn todo-page []
   (let [add-mode (atom false)
         new-item (atom "")]
     (fn []
-      [:div 
-       [:span.btn {:on-click #(secretary/dispatch! "/")} "◀"]
-       [:h3 @current-filename]
-       [:span#add-item.btn {:on-click #(swap! add-mode not)} (if @add-mode "✖" "+")]
-       [:span#clear-completed.btn {} "⛔"]
+      [:div.todo-page
+       [:span#back.btn {:on-click #(secretary/dispatch! "/") :class "fa fa-chevron-circle-left"}]
+       [:h3.list-title @current-filename]
+       [:span#add-item.btn {:on-click #(swap! add-mode not) :class (if @add-mode "fa fa-times-circle" "fa fa-plus-circle")}]
+       [:span#clear-completed.btn {:class "fa fa-trash"}]
        (when @add-mode
          [:div#add-item-container
-          [:input {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
-          [:span#add-item-done.btn {} "✔"]])
+          [:textarea.add-item-text {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
+          [:span#add-item-done.btn {:class "fa fa-check-circle"}]])
        [:ul {:key @current-filename}
         (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todo) todos idx todo])
                             (filter :matched (@todos @current-filename))))]])))
@@ -187,15 +186,17 @@
         new-item (atom "")]
     (fn []
       [:div
-       [:span#add-list.btn {:on-click #(swap! add-mode not)} (if @add-mode "✖" "+")]
+       [:span#add-list.btn {:on-click #(swap! add-mode not) :class (if @add-mode "fa fa-times-circle" "fa fa-plus-circle")}]
        (when @add-mode
          [:div#add-item-container
           [:input {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
-          [:span#add-item-done.btn {} "✔"]])
+          [:span#add-item-done.btn {:class "fa fa-check-circle"}]])
        [:ul {}
         (doall (map-indexed (fn [idx [filename todos]]
                               (let [fname (no-extension filename)]
-                                [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2)) :on-click #(secretary/dispatch! (str "/todo/" fname))} fname])) @todos))]])))
+                                [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2)) :on-click #(secretary/dispatch! (str "/todo/" fname))}
+                                 (if @add-mode [:span.delete-list.btn {:class "fa fa-trash"}])
+                                 fname])) @todos))]])))
 
 (defn current-page []
   [:div [(session/get :current-page)]])
