@@ -125,9 +125,10 @@
               (when (not ok)
                 ; this happens with the poller timeout so we can't use it d'oh
                 )
-              (when (and ok (> (result "timestamp") last-timestamp))
-                (print "long-poller result:" last-timestamp ok result)
-                (reset! todos (transform-text-todos (result "files"))))
+              (let [transformed-todos (transform-text-todos (result "files"))]
+                (when (and ok (not (= @todos transformed-todos)) (> (result "timestamp") last-timestamp))
+                  (print "long-poller result:" last-timestamp ok result)
+                  (reset! todos transformed-todos)))
               (<! (timeout 1000))
               (recur (or (result "timestamp") last-timestamp)))))))
 
