@@ -282,6 +282,7 @@
            [:input {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
            [:i#add-item-done.btn {:on-click (partial add-todo-list-handler todos new-item add-mode) :class "fa fa-check-circle"}]])]
        [:ul {}
+        ; TODO sort by modified timestamp
         (doall (map-indexed (fn [idx [filename todo-list]]
                               (let [fname (no-extension filename)]
                                 [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2))}
