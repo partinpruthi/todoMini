@@ -122,6 +122,16 @@
                  ; TODO: handle result
                  :handler #(print "update-file result:" %)}))
 
+(defn delete-file [fname]
+  "Ask the server to delete a single file."
+  ; not RESTful because PHP doesn't support DELETE parameters well
+  (ajax-request {:uri server-url
+                 :method :get
+                 :params {:delete (str fname ".txt")}
+                 :with-credentials true
+                 :response-format (json-response-format)
+                 :handler #(print "Delete-file result:" %)}))
+
 (defn long-poller [todos instance-id]
   "Continuously poll the server updating the todos atom when the textfile data changes."
   (go (loop [last-timestamp 0]
@@ -184,9 +194,15 @@
   (swap! add-mode not))
 
 (defn add-todo-list-handler [todos new-item add-mode ev]
-  (update-file @new-item (swap! todos assoc @new-item []))
+  (update-file @new-item (swap! todos assoc new-item []))
   (reset! new-item "")
   (swap! add-mode not))
+
+(defn delete-todo-list-handler [todos fname add-mode ev]
+  (when (js/confirm (str "Really delete " fname " list?"))
+    (swap! todos dissoc fname)
+    (delete-file fname))
+  (.preventDefault ev))
 
 ;; -------------------------
 ;; Views
@@ -260,9 +276,9 @@
        [:ul {}
         (doall (map-indexed (fn [idx [filename todo-list]]
                               (let [fname (no-extension filename)]
-                                [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2)) :on-click #(secretary/dispatch! (str "/todo/" fname))}
-                                 (if @add-mode [:i.delete-list.btn {:class "fa fa-minus-circle"}])
-                                 fname])) @todos))]])))
+                                [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2))}
+                                 (if @add-mode [:i.delete-list.btn {:on-click (partial delete-todo-list-handler todos filename add-mode) :class "fa fa-minus-circle"}])
+                                 [:span {:on-click #(secretary/dispatch! (str "/todo/" fname))} fname]])) @todos))]])))
 
 (defn current-page []
   [:div [(session/get :current-page)]])
