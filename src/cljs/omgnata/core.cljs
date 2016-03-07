@@ -205,6 +205,12 @@
                         fname)))
   (reset! new-item-title ""))
 
+(defn finished-sorting-handler [ev]
+  (let [old-idx (.-oldIndex ev)
+        new-idx (.-newIndex ev)
+        difference (- new-idx old-idx)]
+    (js/console.log old-idx new-idx difference)))
+
 (defn add-todo-list-handler [todos new-item add-mode ev]
   (update-file @new-item (swap! todos assoc @new-item []))
   (reset! new-item "")
@@ -228,6 +234,16 @@
                                                (let [node (dom-node this)
                                                      content-length (.-length (.-value node))]
                                                  (if (= 0 content-length) (get-focus this))))}))
+
+(defn with-sortable-wrapper []
+  (with-meta identity {:component-did-mount
+                       (fn [this]
+                         (print "sortable wrapping")
+                         (js/console.log (dom-node this))
+                         (.create js/Sortable
+                                  (dom-node this)
+                                  #js {:handle ".handle"
+                                       :onEnd (partial finished-sorting-handler)}))}))
 
 (defn component-item-edit [item-title edit-mode item-done-fn]
   [(with-focus-wrapper)
@@ -263,6 +279,13 @@
           [:i.checkbox.btn {:on-click (partial checkbox-handler todos filename todo) :class (if (todo :checked) "fa fa-check-circle" "fa fa-circle")}] 
           [:div.todo-text {:on-double-click #(swap! edit-mode not)} (todo :title)]])])))
 
+(defn component-list-of-todos [todos filename add-mode]
+  [(with-sortable-wrapper)
+   (fn []
+     [:ul {:key filename}
+      (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todos filename todo) idx todo add-mode])
+                          (filter :matched (@todos filename))))])])
+
 (defn todo-page [todos filename]
   (let [add-mode (atom false)
         new-item-title (atom "")
@@ -280,9 +303,7 @@
          [:div#add-item-container
           [component-item-add new-item-title add-mode item-done-fn]
           [:i#add-item-done.btn {:on-click item-done-fn :class "fa fa-check-circle"}]])
-       [:ul {:key filename}
-        (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todos filename todo) idx todo add-mode])
-                            (filter :matched (@todos filename))))]])))
+       [component-list-of-todos todos filename add-mode]])))
 
 (defn lists-page [todos timestamps]
   (let [add-mode (atom false)
@@ -312,7 +333,6 @@
 
 ;; -------------------------
 ;; Routes
-
 
 (secretary/defroute "/" []
   (session/put! :current-page (lists-page todo-lists todo-timestamps)))

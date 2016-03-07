@@ -209,6 +209,13 @@ li.todo-line > span.edit-mode {
   margin-right: 0.125em;
 }
 
+.sortable-chosen {
+}
+
+.sortable-ghost {
+  visibility: hidden;
+}
+
 .checkbox {
   display: inline-block;
   float: left;
