@@ -244,3 +244,10 @@ li.todo-line > span.edit-mode {
   }
 }
 
+.fa-stack {
+  font-size: 1.25em;
+}
+
+.fa-inverse {
+  color: #343C46
+}
