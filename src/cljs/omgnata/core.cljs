@@ -224,30 +224,33 @@
                                                      content-length (.-length (.-value node))]
                                                  (if (= 0 content-length) (get-focus this))))}))
 
-(defn component-item-edit [item-title edit-mode]
+(defn component-item-edit [item-title edit-mode item-done-fn]
   [(with-focus-wrapper)
    (fn []
      [:textarea.edit-item-text {:value @item-title
                                 :on-change #(reset! item-title (-> % .-target .-value))
+                               :on-key-down (fn [ev] (when (= (.-which ev) 13) (item-done-fn ev) (.preventDefault ev)))     
                                 :on-blur (fn [ev] 
                                            ; Ugh - hack
                                            (js/setTimeout #(swap! edit-mode not) 100))}])])
 
-(defn component-item-add [item-title edit-mode]
+(defn component-item-add [item-title edit-mode item-done-fn]
   [(with-delayed-focus-wrapper)
    (fn []
      [:textarea.add-item-text {:value @item-title
-                               :on-change #(reset! item-title (-> % .-target .-value))}])])
+                               :on-change #(reset! item-title (-> % .-target .-value))
+                               :on-key-down (fn [ev] (when (= (.-which ev) 13) (item-done-fn ev) (.preventDefault ev)))}])])
 
-(defn component-todo-item [filename todo]
+(defn component-todo-item [todos filename todo]
   (let [edit-mode (atom false)
-        item-title (atom (todo :title))]
-    (fn [todos idx todo parent-add-mode]
+        item-title (atom (todo :title))
+        item-update-fn (partial update-item-handler todos filename todo item-title)]
+    (fn [idx todo parent-add-mode]
       [:li.todo-line {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
        (if @edit-mode
          [:span.edit-mode {}
-          [component-item-edit item-title edit-mode]
-          [:i.btn.update-item-done {:on-click (partial update-item-handler todos filename todo item-title) :class "fa fa-check-circle"}]]
+          [component-item-edit item-title edit-mode item-update-fn]
+          [:i.btn.update-item-done {:on-click item-update-fn :class "fa fa-check-circle"}]]
          [:span {}
           (when @parent-add-mode [:span
                                   [:i.handle.btn {:class "fa fa-sort"}] 
@@ -258,7 +261,7 @@
 (defn todo-page [todos filename]
   (let [add-mode (atom false)
         new-item-title (atom "")
-        add-item-input-element (atom nil)]
+        item-done-fn (partial add-todo-item-handler todos filename new-item-title add-mode)]
     (fn []
       [:div.todo-page
        [:i#back.btn {:on-click #(secretary/dispatch! "/") :class "fa fa-chevron-circle-left"}]
@@ -270,15 +273,16 @@
          [:i#clear-completed.btn {:on-click (partial delete-completed-handler todos filename) :class "fa fa-minus-circle"}])
        (when @add-mode
          [:div#add-item-container
-          [component-item-add new-item-title add-mode add-item-input-element]
-          [:i#add-item-done.btn {:on-click (partial add-todo-item-handler todos filename new-item-title add-mode) :class "fa fa-check-circle"}]])
+          [component-item-add new-item-title add-mode item-done-fn]
+          [:i#add-item-done.btn {:on-click item-done-fn :class "fa fa-check-circle"}]])
        [:ul {:key filename}
-        (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item filename todo) todos idx todo add-mode])
+        (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todos filename todo) idx todo add-mode])
                             (filter :matched (@todos filename))))]])))
 
 (defn lists-page [todos]
   (let [add-mode (atom false)
-        new-item (atom "")]
+        new-item (atom "")
+        update-fn (partial add-todo-list-handler todos new-item add-mode)]
     (fn []
       [:div
        [:div#list-edit-container
@@ -287,8 +291,8 @@
          (if @add-mode [:i {:class "fa fa-stack-1x fa-times fa-inverse"}] [:i {:class "fa fa-stack-1x fa-pencil fa-inverse"}])]
         (when @add-mode
           [:div#add-item-container
-           [:input {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
-           [:i#add-item-done.btn {:on-click (partial add-todo-list-handler todos new-item add-mode) :class "fa fa-check-circle"}]])]
+           [:input {:on-change #(reset! new-item (-> % .-target .-value)) :on-key-down #(if (= (.-which %) 13) (update-fn %)) :value @new-item}]
+           [:i#add-item-done.btn {:on-click update-fn :class "fa fa-check-circle"}]])]
        [:ul {}
         ; TODO sort by modified timestamp
         (doall (map-indexed (fn [idx [filename todo-list]]
