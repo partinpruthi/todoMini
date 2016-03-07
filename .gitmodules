@@ -1,3 +1,6 @@
 [submodule "resources/public/font-awesome"]
 	path = resources/public/font-awesome
 	url = https://github.com/FortAwesome/Font-Awesome.git
+[submodule "resources/public/sortable"]
+	path = resources/public/sortable
+	url = https://github.com/RubaXa/Sortable.git
