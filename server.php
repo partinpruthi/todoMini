@@ -1,9 +1,10 @@
 <?php
-// https://github.com/panique/php-long-polling/blob/master/server/server.php
 /**
  * Infinite looping PHP long-poller.
- * NOTE: this is unauthenticated so put it behing e.g. htaccess and HTTPS
+ * NOTE: this is unauthenticated so put it behind e.g. htaccess and HTTPS
  */
+// original from here:
+// https://github.com/panique/php-long-polling/blob/master/server/server.php
 
 // enable cors
 cors();
