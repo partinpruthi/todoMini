@@ -190,10 +190,8 @@
     [:textarea.edit-item-text {:value @item-title
                                :on-change #(reset! item-title (-> % .-target .-value))
                                :on-blur (fn [ev] 
-                                          ; (js/console.log (.-target ev))
-                                          ; (swap! edit-mode not)
                                           ; Ugh - hack
-                                          )}])
+                                          (js/setTimeout #(swap! edit-mode not) 100))}])
 
 (def component-input-with-focus
   (with-meta component-input
@@ -209,15 +207,15 @@
 (defn component-todo-item [filename todo]
   (let [edit-mode (atom false)
         item-title (atom (todo :title))]
-    (fn [todos idx todo]
+    (fn [todos idx todo parent-add-mode]
       [:li.todo-line {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
        (if @edit-mode
          [:span.edit-mode {}
           [component-input-with-focus item-title edit-mode]
-          [:i.btn.update-item-done {:on-click (partial update-item-handler todos filename todo item-title) :class "fa fa-check-circle"}] 
-          [:i.btn.delete-item {:on-click (partial delete-item-handler todos filename todo) :class "fa fa-minus-circle"}]]
+          [:i.btn.update-item-done {:on-click (partial update-item-handler todos filename todo item-title) :class "fa fa-check-circle"}]]
          [:span {}
           [:i.handle.btn {:class "fa fa-sort"}] 
+          (when @parent-add-mode [:i.btn.delete-item {:on-click (partial delete-item-handler todos filename todo) :class "fa fa-minus-circle"}]) 
           [:i.checkbox.btn {:on-click (partial checkbox-handler todos filename todo) :class (if (todo :checked) "fa fa-check-circle" "fa fa-circle")}] 
           [:div.todo-text {:on-double-click #(swap! edit-mode not)} (todo :title)]])])))
 
@@ -238,7 +236,7 @@
           [:textarea.add-item-text {:on-change #(reset! new-item-title (-> % .-target .-value)) :value @new-item-title}]
           [:i#add-item-done.btn {:on-click (partial add-todo-item-handler todos filename new-item-title add-mode) :class "fa fa-check-circle"}]])
        [:ul {:key filename}
-        (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item filename todo) todos idx todo])
+        (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item filename todo) todos idx todo add-mode])
                             (filter :matched (@todos filename))))]])))
 
 (defn lists-page [todos]
