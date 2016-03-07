@@ -201,7 +201,7 @@
   (reset! new-item-title ""))
 
 (defn add-todo-list-handler [todos new-item add-mode ev]
-  (update-file @new-item (swap! todos assoc new-item []))
+  (update-file @new-item (swap! todos assoc @new-item []))
   (reset! new-item "")
   (swap! add-mode not))
 
