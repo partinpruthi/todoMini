@@ -216,7 +216,7 @@
          [:span.edit-mode {}
           [component-input-with-focus item-title edit-mode]
           [:i.btn.update-item-done {:on-click (partial update-item-handler todos filename todo item-title) :class "fa fa-check-circle"}] 
-          [:span.btn.delete-item {:on-click (partial delete-item-handler todos filename todo) :class "fa fa-stack"} [:i {:class "fa fa-circle fa-stack-2x"}] [:i {:class "fa fa-trash fa-stack-1x fa-inverse"}]]]
+          [:i.btn.delete-item {:on-click (partial delete-item-handler todos filename todo) :class "fa fa-minus-circle"}]]
          [:span {}
           [:i.handle.btn {:class "fa fa-sort"}] 
           [:i.checkbox.btn {:on-click (partial checkbox-handler todos filename todo) :class (if (todo :checked) "fa fa-check-circle" "fa fa-circle")}] 
@@ -231,7 +231,7 @@
        [:h3.list-title filename]
        [:i#add-item.btn {:on-click #(swap! add-mode not) :class (if @add-mode "fa fa-times-circle" "fa fa-plus-circle")}]
        (when @add-mode
-         [:i#clear-completed.btn {:on-click (partial delete-completed-handler todos filename) :class "fa fa-trash"}])
+         [:i#clear-completed.btn {:on-click (partial delete-completed-handler todos filename) :class "fa fa-minus-circle"}])
        (when @add-mode
          [:div#add-item-container
           [:textarea.add-item-text {:on-change #(reset! new-item-title (-> % .-target .-value)) :value @new-item-title}]
