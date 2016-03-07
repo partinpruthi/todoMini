@@ -55,13 +55,9 @@ function dirPoller($datadir) {
         // get content of data.txt
         $data = dirFiles($datadir);
         // put data.txt's content and timestamp of last data.txt change into array
-        $result = array(
-            'files' => $data,
-            'timestamp' => $last_change_in_data_files
-        );
+        $data["timestamp"] = $last_change_in_data_files;
         // encode to JSON, render the result (for AJAX)
-        $json = json_encode($result);
-        echo $json;
+        echo json_encode($data);
         // leave this loop step
         break;
     } else {
@@ -76,16 +72,18 @@ function dirPoller($datadir) {
 // http://www.w3schools.com/php/func_directory_readdir.asp
 function dirFiles($datadir) {
   $files = array();
+  $creation_timestmaps = array();
   if ($dh = opendir($datadir)){
     while (($filename = readdir($dh)) !== false){
       if (endsWith($filename, ".txt")) {
         $filepath = $datadir . "/" . $filename;
         $files[$filename] = file_get_contents($filepath);
+        $creation_timestamps[$filename] = filectime($filepath);
       }
     }
     closedir($dh);
   }
-  return $files;
+  return Array("files" => $files, "creation_timestamps" => $creation_timestamps);
 }
 
 function dirTimestamp($datadir) {
