@@ -229,7 +229,9 @@
       [:div.todo-page
        [:i#back.btn {:on-click #(secretary/dispatch! "/") :class "fa fa-chevron-circle-left"}]
        [:h3.list-title filename]
-       [:i#add-item.btn {:on-click #(swap! add-mode not) :class (if @add-mode "fa fa-times-circle" "fa fa-plus-circle")}]
+       [:span#add-item.btn {:on-click #(swap! add-mode not) :class "fa fa-stack"}
+        [:i {:class "fa fa-stack-2x fa-circle"}]
+        (if @add-mode [:i {:class "fa fa-stack-1x fa-times fa-inverse"}] [:i {:class "fa fa-stack-1x fa-pencil fa-inverse"}])]
        (when @add-mode
          [:i#clear-completed.btn {:on-click (partial delete-completed-handler todos filename) :class "fa fa-minus-circle"}])
        (when @add-mode
@@ -245,7 +247,9 @@
         new-item (atom "")]
     (fn []
       [:div
-       [:i#add-list.btn {:on-click #(swap! add-mode not) :class (if @add-mode "fa fa-times-circle" "fa fa-plus-circle")}]
+       [:span#add-list.btn {:on-click #(swap! add-mode not) :class "fa fa-stack"}
+        [:i {:class "fa fa-stack-2x fa-circle"}]
+        (if @add-mode [:i {:class "fa fa-stack-1x fa-times fa-inverse"}] [:i {:class "fa fa-stack-1x fa-pencil fa-inverse"}])]
        (when @add-mode
          [:div#add-item-container
           [:input {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
@@ -254,7 +258,7 @@
         (doall (map-indexed (fn [idx [filename todo-list]]
                               (let [fname (no-extension filename)]
                                 [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2)) :on-click #(secretary/dispatch! (str "/todo/" fname))}
-                                 (if @add-mode [:i.delete-list.btn {:class "fa fa-trash"}])
+                                 (if @add-mode [:i.delete-list.btn {:class "fa fa-minus-circle"}])
                                  fname])) @todos))]])))
 
 (defn current-page []
