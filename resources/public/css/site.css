@@ -129,6 +129,7 @@ li.todo-line > span {
 }
 
 li.todo-line > span.edit-mode {
+  margin-bottom: 3.5em;
 }
 
 .list-title {
@@ -171,6 +172,7 @@ li.todo-line > span.edit-mode {
 
 .delete-item {
   margin-left: -0.1em;
+  float: right;
 }
 
 .edit-item-text {
