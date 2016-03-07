@@ -25,6 +25,14 @@
 
 (defn no-extension [s] (.replace s ".txt" ""))
 
+(defn get-focus [this]
+  (let [node (dom-node this)
+        pos (.-length (.-value node))]
+    ; focus on the textbox
+    (.focus node)
+    ; put the cursor at the end
+    (.setSelectionRange node pos pos)))
+
 ;***** todo parsing *****;
 
 ; http://stackoverflow.com/a/18737013/2131094
@@ -206,23 +214,22 @@
 ;; -------------------------
 ;; Views
 
-(defn component-input [item-title edit-mode]
-    [:textarea.edit-item-text {:value @item-title
-                               :on-change #(reset! item-title (-> % .-target .-value))
-                               :on-blur (fn [ev] 
-                                          ; Ugh - hack
-                                          (js/setTimeout #(swap! edit-mode not) 100))}])
+(defn with-focus-wrapper [action]
+  (with-meta identity {action get-focus}))
 
-(def component-input-with-focus
-  (with-meta component-input
-             {:component-did-mount
-              (fn [this]
-                (let [node (dom-node this)
-                      pos (.-length (.-value node))]
-                  ; focus on the textbox
-                  (.focus node)
-                  ; put the cursor at the end
-                  (.setSelectionRange node pos pos)))}))
+(defn component-item-edit [item-title edit-mode]
+  (fn []
+    [(with-focus-wrapper :component-did-mount)
+      [:textarea.edit-item-text {:value @item-title
+                                 :on-change #(reset! item-title (-> % .-target .-value))
+                                 :on-blur (fn [ev] 
+                                            ; Ugh - hack
+                                            (js/setTimeout #(swap! edit-mode not) 100))}]]))
+
+(defn component-item-add [item-title edit-mode]
+  (fn []
+    [:textarea.add-item-text {:value @item-title
+                              :on-change #(reset! item-title (-> % .-target .-value))}]))
 
 (defn component-todo-item [filename todo]
   (let [edit-mode (atom false)
@@ -231,7 +238,7 @@
       [:li.todo-line {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
        (if @edit-mode
          [:span.edit-mode {}
-          [component-input-with-focus item-title edit-mode]
+          [component-item-edit item-title edit-mode]
           [:i.btn.update-item-done {:on-click (partial update-item-handler todos filename todo item-title) :class "fa fa-check-circle"}]]
          [:span {}
           (when @parent-add-mode [:span
@@ -242,7 +249,8 @@
 
 (defn todo-page [todos filename]
   (let [add-mode (atom false)
-        new-item-title (atom "")]
+        new-item-title (atom "")
+        add-item-input-element (atom nil)]
     (fn []
       [:div.todo-page
        [:i#back.btn {:on-click #(secretary/dispatch! "/") :class "fa fa-chevron-circle-left"}]
@@ -254,7 +262,7 @@
          [:i#clear-completed.btn {:on-click (partial delete-completed-handler todos filename) :class "fa fa-minus-circle"}])
        (when @add-mode
          [:div#add-item-container
-          [:textarea.add-item-text {:on-change #(reset! new-item-title (-> % .-target .-value)) :value @new-item-title}]
+          [component-item-add new-item-title add-mode add-item-input-element]
           [:i#add-item-done.btn {:on-click (partial add-todo-item-handler todos filename new-item-title add-mode) :class "fa fa-check-circle"}]])
        [:ul {:key filename}
         (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item filename todo) todos idx todo add-mode])
