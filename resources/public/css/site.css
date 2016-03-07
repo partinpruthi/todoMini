@@ -170,6 +170,7 @@ li.todo-line > span.edit-mode {
 }
 
 #add-list {
+  margin-right: 0.275em;
 }
 
 #list-edit-container {
