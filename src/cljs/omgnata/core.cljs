@@ -15,6 +15,7 @@
 
 (defonce instance (atom 0))
 (defonce todo-lists (atom {}))
+(defonce todo-timestamps (atom {}))
 
 (def re-todo-finder #"[\ \t]*\*[\ \t]*\[(.*?)\]")
 (def re-todo-parser #"[\ \t]*\*[\ \t]*\[(.*?)\][\ \t]*(.*?)[\n$]([\s\S]*)")
@@ -140,7 +141,7 @@
                  :response-format (json-response-format)
                  :handler #(print "Delete-file result:" %)}))
 
-(defn long-poller [todos instance-id]
+(defn long-poller [todos file-timestamps instance-id]
   "Continuously poll the server updating the todos atom when the textfile data changes."
   (go (loop [last-timestamp 0]
           (print "Long poller initiated:" instance-id "timestamp:" last-timestamp)
@@ -151,7 +152,11 @@
               (when (not ok)
                 ; this happens with the poller timeout so we can't use it d'oh
                 )
-              (let [transformed-todos (transform-text-todos (result "files"))]
+              (let [transformed-todos (transform-text-todos (result "files"))
+                    timestamps (into {} (map (fn [[fname timestamp]] [(no-extension fname) timestamp]) (result "creation_timestamps")))]
+                (when (and ok (not (= @file-timestamps timestamps)) timestamps)
+                  (print "creation timestamps:" timestamps)
+                  (reset! file-timestamps timestamps))  
                 (when (and ok (not (= @todos transformed-todos)) (> (result "timestamp") last-timestamp))
                   (print "long-poller result:" last-timestamp ok result)
                   (reset! todos transformed-todos)))
@@ -279,7 +284,7 @@
         (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todos filename todo) idx todo add-mode])
                             (filter :matched (@todos filename))))]])))
 
-(defn lists-page [todos]
+(defn lists-page [todos timestamps]
   (let [add-mode (atom false)
         new-item (atom "")
         update-fn (partial add-todo-list-handler todos new-item add-mode)]
@@ -294,12 +299,13 @@
            [:input {:on-change #(reset! new-item (-> % .-target .-value)) :on-key-down #(if (= (.-which %) 13) (update-fn %)) :value @new-item}]
            [:i#add-item-done.btn {:on-click update-fn :class "fa fa-check-circle"}]])]
        [:ul {}
-        ; TODO sort by modified timestamp
         (doall (map-indexed (fn [idx [filename todo-list]]
                               (let [fname (no-extension filename)]
                                 [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2))}
                                  (if @add-mode [:i.delete-list.btn {:on-click (partial delete-todo-list-handler todos filename add-mode) :class "fa fa-minus-circle"}])
-                                 [:span {:on-click #(secretary/dispatch! (str "/todo/" fname))} fname]])) @todos))]])))
+                                 [:span {:on-click #(secretary/dispatch! (str "/todo/" fname))} fname]]))
+                            ; sort by the creation time timestamps the server has sent, defaulting to infinity (for newly created files)
+                            (sort #(compare (or (@timestamps (first %2)) js/Number.MAX_VALUE) (or (@timestamps (first %1)) js/Number.MAX_VALUE)) @todos)))]])))
 
 (defn current-page []
   [:div [(session/get :current-page)]])
@@ -309,7 +315,7 @@
 
 
 (secretary/defroute "/" []
-  (session/put! :current-page (lists-page todo-lists)))
+  (session/put! :current-page (lists-page todo-lists todo-timestamps)))
 
 (secretary/defroute "/todo/:fname" [fname]
   (session/put! :current-page (todo-page todo-lists fname)))
@@ -318,7 +324,7 @@
 ;; Initialize app
 
 ; initiate the long-poller
-(long-poller todo-lists (swap! instance inc))
+(long-poller todo-lists todo-timestamps (swap! instance inc))
 
 ; tell react to handle touch events
 (.initializeTouchEvents js/React true)
