@@ -251,7 +251,7 @@
        [:span#add-item.btn {:on-click #(swap! add-mode not) :class "fa fa-stack"}
         [:i {:class "fa fa-stack-2x fa-circle"}]
         (if @add-mode [:i {:class "fa fa-stack-1x fa-times fa-inverse"}] [:i {:class "fa fa-stack-1x fa-pencil fa-inverse"}])]
-       (when @add-mode
+       (when (and @add-mode (> (count (filter :checked (@todos filename))) 0))
          [:i#clear-completed.btn {:on-click (partial delete-completed-handler todos filename) :class "fa fa-minus-circle"}])
        (when @add-mode
          [:div#add-item-container
