@@ -214,22 +214,30 @@
 ;; -------------------------
 ;; Views
 
-(defn with-focus-wrapper [action]
-  (with-meta identity {action get-focus}))
+(defn with-focus-wrapper []
+  (with-meta identity {:component-did-mount (fn [this] (get-focus this))}))
+
+(defn with-delayed-focus-wrapper []
+  (with-meta identity {:component-did-update (fn [this]
+                                               ; only get focus if they have just created a note
+                                               (let [node (dom-node this)
+                                                     content-length (.-length (.-value node))]
+                                                 (if (= 0 content-length) (get-focus this))))}))
 
 (defn component-item-edit [item-title edit-mode]
-  (fn []
-    [(with-focus-wrapper :component-did-mount)
-      [:textarea.edit-item-text {:value @item-title
-                                 :on-change #(reset! item-title (-> % .-target .-value))
-                                 :on-blur (fn [ev] 
-                                            ; Ugh - hack
-                                            (js/setTimeout #(swap! edit-mode not) 100))}]]))
+  [(with-focus-wrapper)
+   (fn []
+     [:textarea.edit-item-text {:value @item-title
+                                :on-change #(reset! item-title (-> % .-target .-value))
+                                :on-blur (fn [ev] 
+                                           ; Ugh - hack
+                                           (js/setTimeout #(swap! edit-mode not) 100))}])])
 
 (defn component-item-add [item-title edit-mode]
-  (fn []
-    [:textarea.add-item-text {:value @item-title
-                              :on-change #(reset! item-title (-> % .-target .-value))}]))
+  [(with-delayed-focus-wrapper)
+   (fn []
+     [:textarea.add-item-text {:value @item-title
+                               :on-change #(reset! item-title (-> % .-target .-value))}])])
 
 (defn component-todo-item [filename todo]
   (let [edit-mode (atom false)
