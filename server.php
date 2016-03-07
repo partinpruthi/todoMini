@@ -12,6 +12,8 @@ $dir = "data";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   updateFile($_POST, $dir);
+} elseif (isset($_GET["delete"])) {
+  deleteFile($_GET, $dir);
 } else {
   dirPoller($dir);
 }
@@ -20,6 +22,16 @@ function updateFile($update, $dir) {
   $filename = basename($update["filename"]);
   if (endsWith($filename, ".txt") && isset($update["content"])) {
     file_put_contents($dir . "/" . $filename, $update["content"]);
+    echo json_encode("success");
+  } else {
+    echo json_encode("bad request");
+  }
+}
+
+function deleteFile($delete, $dir) {
+  $filename = $dir . "/" . basename($delete["delete"]);
+  if (endsWith($filename, ".txt") && file_exists($filename)) {
+    unlink($filename);
     echo json_encode("success");
   } else {
     echo json_encode("bad request");
@@ -79,7 +91,7 @@ function dirFiles($datadir) {
 function dirTimestamp($datadir) {
   // PHP caches file data, like requesting the size of a file, by default. clearstatcache() clears that cache
   clearstatcache();
-  $timestamp = 0;
+  $timestamp = filemtime($datadir . "/.");
   if ($dh = opendir($datadir)){
     while (($filename = readdir($dh)) !== false){
       if (endsWith($filename, ".txt")) {
@@ -115,7 +127,7 @@ function cors() {
     // Access-Control headers are received during OPTIONS requests
     if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
         if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
-            header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+            header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
         if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
             header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
         exit(0);
