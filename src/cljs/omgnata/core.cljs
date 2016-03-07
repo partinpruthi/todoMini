@@ -83,6 +83,8 @@
             (% :source))
          todo-items)))
 
+;***** Manipulating data strcutures *****;
+
 (defn re-compute-indices [todo-items]
   (into {} (for [[fname todo-list] todo-items]
              [fname (vec (map-indexed (fn [idx t] (assoc t :index idx)) todo-list))])))
