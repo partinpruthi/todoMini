@@ -87,6 +87,9 @@
   (into {} (for [[fname todo-list] todo-items]
              [fname (vec (map-indexed (fn [idx t] (assoc t :index idx)) todo-list))])))
 
+(defn remove-completed [todo-items fname]
+  (update-in todo-items [fname] #(remove :checked %)))
+
 (defn remove-item [todo-items fname todo]
   (update-in todo-items [fname] (fn [todo-list] (remove #(= (% :index) (todo :index)) todo-list))))
 
@@ -154,6 +157,13 @@
                               (re-compute-indices)))
                           fname))))
 
+(defn delete-completed-handler [todos fname ev]
+  (update-file fname (reassemble-todos
+                         ((swap! todos #(-> %
+                              (remove-completed fname)
+                              (re-compute-indices)))
+                          fname))))
+
 (defn update-item-handler [todos fname todo item-title ev]
   (let [todo-list (@todos fname)]
     (update-file fname (reassemble-todos
@@ -218,7 +228,8 @@
        [:span#back.btn {:on-click #(secretary/dispatch! "/") :class "fa fa-chevron-circle-left"}]
        [:h3.list-title filename]
        [:span#add-item.btn {:on-click #(swap! add-mode not) :class (if @add-mode "fa fa-times-circle" "fa fa-plus-circle")}]
-       [:span#clear-completed.btn {:class "fa fa-trash"}]
+       (when @add-mode
+         [:i#clear-completed.btn {:on-click (partial delete-completed-handler todos filename) :class "fa fa-trash"}])
        (when @add-mode
          [:div#add-item-container
           [:textarea.add-item-text {:on-change #(reset! new-item-title (-> % .-target .-value)) :value @new-item-title}]
