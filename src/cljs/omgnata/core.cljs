@@ -85,9 +85,8 @@
 
 ;***** Manipulating data strcutures *****;
 
-(defn re-compute-indices [todo-items]
-  (into {} (for [[fname todo-list] todo-items]
-             [fname (vec (map-indexed (fn [idx t] (assoc t :index idx)) todo-list))])))
+(defn re-compute-indices [todo-items fname]
+  (update-in todo-items [fname] #(vec (map-indexed (fn [idx t] (assoc t :index idx)) %))))
 
 (defn remove-completed [todo-items fname]
   (update-in todo-items [fname] #(remove :checked %)))
@@ -149,21 +148,21 @@
     (update-file fname (reassemble-todos
                          ((swap! todos #(-> %
                               (update-in [fname (todo :index) :checked] not)
-                              (re-compute-indices)))
+                              (re-compute-indices fname)))
                           fname)))))
 
 (defn delete-item-handler [todos fname todo ev]
   (update-file fname (reassemble-todos
                          ((swap! todos #(-> %
                               (remove-item fname todo)
-                              (re-compute-indices)))
+                              (re-compute-indices fname)))
                           fname))))
 
 (defn delete-completed-handler [todos fname ev]
   (update-file fname (reassemble-todos
                          ((swap! todos #(-> %
                               (remove-completed fname)
-                              (re-compute-indices)))
+                              (re-compute-indices fname)))
                           fname))))
 
 (defn update-item-handler [todos fname todo item-title ev]
@@ -171,7 +170,7 @@
     (update-file fname (reassemble-todos
                          ((swap! todos #(-> %
                               (assoc-in [fname (todo :index) :title] @item-title)
-                              (re-compute-indices)))
+                              (re-compute-indices fname)))
                           fname)))))
 
 (defn add-todo-item-handler [todos fname new-item-title add-mode ev]
@@ -179,7 +178,7 @@
                        ((swap! todos 
                                #(-> %
                                     (update-in [fname] (fn [todo-list new-item] (into [new-item] todo-list)) {:title @new-item-title :checked false :matched true})
-                                    (re-compute-indices)))
+                                    (re-compute-indices fname)))
                         fname)))
   (reset! new-item-title "") 
   (swap! add-mode not))
