@@ -156,8 +156,8 @@ li.todo-line > span.edit-mode {
 
 #add-item-container {
   padding: 0px;
-  margin: 0px;
   margin: 1em;
+  margin-top: 0.5em;
 }
 
 #add-item-done {
@@ -165,8 +165,16 @@ li.todo-line > span.edit-mode {
   text-align: right;
 }
 
-#back, #add-list {
+#back {
   margin-left: 0.275em;
+}
+
+#add-list {
+}
+
+#list-edit-container {
+  text-align: right;
+  margin: 0px;
 }
 
 .update-item-done {

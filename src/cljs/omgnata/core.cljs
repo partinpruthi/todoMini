@@ -273,13 +273,14 @@
         new-item (atom "")]
     (fn []
       [:div
-       [:span#add-list.btn {:on-click #(swap! add-mode not) :class "fa fa-stack"}
-        [:i {:class "fa fa-stack-2x fa-circle"}]
-        (if @add-mode [:i {:class "fa fa-stack-1x fa-times fa-inverse"}] [:i {:class "fa fa-stack-1x fa-pencil fa-inverse"}])]
-       (when @add-mode
-         [:div#add-item-container
-          [:input {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
-          [:i#add-item-done.btn {:on-click (partial add-todo-list-handler todos new-item add-mode) :class "fa fa-check-circle"}]])
+       [:div#list-edit-container
+        [:span#add-list.btn {:on-click #(swap! add-mode not) :class "fa fa-stack"}
+         [:i {:class "fa fa-stack-2x fa-circle"}]
+         (if @add-mode [:i {:class "fa fa-stack-1x fa-times fa-inverse"}] [:i {:class "fa fa-stack-1x fa-pencil fa-inverse"}])]
+        (when @add-mode
+          [:div#add-item-container
+           [:input {:on-change #(reset! new-item (-> % .-target .-value)) :value @new-item}]
+           [:i#add-item-done.btn {:on-click (partial add-todo-list-handler todos new-item add-mode) :class "fa fa-check-circle"}]])]
        [:ul {}
         (doall (map-indexed (fn [idx [filename todo-list]]
                               (let [fname (no-extension filename)]
