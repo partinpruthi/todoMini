@@ -42,6 +42,10 @@
 (defn get-index-of [v k vl]
   (first (remove nil? (map-indexed #(if (= (%2 k) vl) %1) v))))
 
+(defn insert-at [v idx values]
+  (let [[before after] (split-at idx v)]
+    (vec (concat before values after))))
+
 ;***** todo parsing *****;
 
 ; http://stackoverflow.com/a/18737013/2131094
@@ -213,12 +217,17 @@
                           fname)))))
 
 (defn add-todo-item-handler [todos fname new-item-title add-mode ev]
-  (update-file fname (reassemble-todos
-                       ((swap! todos 
-                               #(-> %
-                                    (update-in [fname] (fn [todo-list new-item] (into [new-item] todo-list)) {:title @new-item-title :checked false :matched true})
-                                    (re-compute-indices fname)))
-                        fname)))
+  (let [todo-list (get @todos fname)
+        first-matched (get-index-of todo-list :matched true)]
+    (print "first-matched" first-matched)
+    (update-file fname (reassemble-todos
+                         ((swap! todos #(-> %
+                                            (assoc-in [fname]
+                                                      (insert-at todo-list
+                                                                 (if (= (get-index-of todo-list :matched false) 0) 1 0)
+                                                                 [{:title @new-item-title :checked false :matched true}]))
+                                            (re-compute-indices fname)))
+                          fname))))
   (reset! new-item-title ""))
 
 (defn finished-sorting-handler [todos filename ev]
