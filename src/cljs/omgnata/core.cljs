@@ -34,6 +34,14 @@
     ; put the cursor at the end
     (.setSelectionRange node pos pos)))
 
+; http://stackoverflow.com/a/5980031/2131094
+(defn swap-elements [v i1 i2] 
+  "Swap two elements in a vector."
+  (assoc v i2 (v i1) i1 (v i2)))
+
+(defn get-index-of [v k vl]
+  (first (remove nil? (map-indexed #(if (= (%2 k) vl) %1) v))))
+
 ;***** todo parsing *****;
 
 ; http://stackoverflow.com/a/18737013/2131094
@@ -102,6 +110,14 @@
 
 (defn remove-item [todo-items fname todo]
   (update-in todo-items [fname] (fn [todo-list] (remove #(= (% :index) (todo :index)) todo-list))))
+
+(defn re-order-todo-list [todo-list start-index destination-index]
+  (loop [todo-list-updated todo-list current-index start-index]
+    (let [diff (- destination-index current-index)
+          new-index (+ current-index (/ diff (js/Math.abs diff)))]
+      (if (not (= diff 0))
+        (recur (swap-elements todo-list-updated current-index new-index) new-index)
+        todo-list-updated))))
 
 ;***** Network functions *****;
 
@@ -205,11 +221,21 @@
                         fname)))
   (reset! new-item-title ""))
 
-(defn finished-sorting-handler [ev]
+(defn finished-sorting-handler [todos filename ev]
   (let [old-idx (.-oldIndex ev)
         new-idx (.-newIndex ev)
-        difference (- new-idx old-idx)]
-    (js/console.log old-idx new-idx difference)))
+        el (.-item ev)
+        data-index (int (.getAttribute el "data-index"))
+        todo-list (get @todos filename)
+        start-index (get-index-of todo-list :index data-index)
+        difference (- new-idx old-idx)
+        destination-index (+ start-index difference)]
+    (update-file filename
+                 (reassemble-todos
+                   ((swap! todos #(-> %
+                                      (assoc-in [filename] (re-order-todo-list todo-list start-index destination-index))
+                                      (re-compute-indices filename)))
+                    filename)))))
 
 (defn add-todo-list-handler [todos new-item add-mode ev]
   (update-file @new-item (swap! todos assoc @new-item []))
@@ -235,15 +261,14 @@
                                                      content-length (.-length (.-value node))]
                                                  (if (= 0 content-length) (get-focus this))))}))
 
-(defn with-sortable-wrapper []
+(defn with-sortable-wrapper [todos filename]
   (with-meta identity {:component-did-mount
                        (fn [this]
                          (print "sortable wrapping")
-                         (js/console.log (dom-node this))
                          (.create js/Sortable
                                   (dom-node this)
                                   #js {:handle ".handle"
-                                       :onEnd (partial finished-sorting-handler)}))}))
+                                       :onEnd (partial finished-sorting-handler todos filename)}))}))
 
 (defn component-item-edit [item-title edit-mode item-done-fn]
   [(with-focus-wrapper)
@@ -267,7 +292,7 @@
         item-title (atom (todo :title))
         item-update-fn (partial update-item-handler todos filename todo item-title)]
     (fn [idx todo parent-add-mode]
-      [:li.todo-line {:key (todo :index) :class (str "oddeven-" (mod idx 2))}
+      [:li.todo-line {:key (todo :index) :data-index (todo :index) :class (str "oddeven-" (mod idx 2))}
        (if @edit-mode
          [:span.edit-mode {}
           [component-item-edit item-title edit-mode item-update-fn]
@@ -280,7 +305,7 @@
           [:div.todo-text {:on-double-click #(swap! edit-mode not)} (todo :title)]])])))
 
 (defn component-list-of-todos [todos filename add-mode]
-  [(with-sortable-wrapper)
+  [(with-sortable-wrapper todos filename)
    (fn []
      [:ul {:key filename}
       (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todos filename todo) idx todo add-mode])
