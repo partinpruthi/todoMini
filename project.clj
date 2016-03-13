@@ -54,7 +54,6 @@
                                         :optimizations :none
                                         :pretty-print true}}
                        :min {:source-paths ["env/prod/cljs" "src/cljs" "src/cljc"]
-                             :env {:production "true"}
                              :compiler {:output-to "build/js/app.js"
                                         :main "omgnata.prod"
                                         :optimizations :advanced
