@@ -99,7 +99,7 @@
                               :css-dirs ["resources/public/css"]
                               :ring-handler omgnata.handler/app}
 
-                   :env {:dev true}
+                   :env {:dev "true"}
 
                    :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
                                               :compiler {:main "omgnata.dev"
@@ -113,7 +113,7 @@
              :uberjar {:hooks [minify-assets.plugin/hooks]
                        :source-paths ["env/prod/clj"]
                        :prep-tasks ["compile" ["cljsbuild" "once"]]
-                       :env {:production true}
+                       :env {:production "true"}
                        :aot :all
                        :omit-source true
                        :cljsbuild {:jar true
