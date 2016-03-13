@@ -50,10 +50,15 @@
   :cljsbuild {:builds {:app {:source-paths ["src/cljs" "src/cljc"]
                              :compiler {:output-to "target/cljsbuild/public/js/app.js"
                                         :output-dir "target/cljsbuild/public/js/out"
-                                        :asset-path   "js/out"
+                                        :asset-path "js/out"
                                         :optimizations :none
-                                        :pretty-print  true}}}}
-
+                                        :pretty-print true}}
+                       :min {:source-paths ["env/prod/cljs" "src/cljs" "src/cljc"]
+                             :env {:production "true"}
+                             :compiler {:output-to "build/js/app.js"
+                                        :main "omgnata.prod"
+                                        :optimizations :advanced
+                                        :pretty-print false}}}}
 
   :profiles {:dev {:repl-options {:init-ns omgnata.repl}
 
