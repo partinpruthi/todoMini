@@ -73,8 +73,8 @@ function dirPoller($datadir) {
 // http://www.w3schools.com/php/func_directory_readdir.asp
 function dirFiles($datadir) {
   $files = array();
-  $creation_timestmaps = array();
-  if ($dh = opendir($datadir)){
+  $creation_timestamps = array();
+  if ($dh = opendir($datadir)) {
     while (($filename = readdir($dh)) !== false){
       if (endsWith($filename, ".txt")) {
         $filepath = $datadir . "/" . $filename;
