@@ -19,6 +19,7 @@
      [:meta {:name "apple-mobile-web-app-status-bar-style" :content "black"}]
      [:title "omgnata"]
      [:link {:rel "apple-touch-icon-precomposed" :sizes "192x192" :href "img/icon.png"}]
+     [:link {:rel "icon" :type "image/png" :href "img/icon.png"}]
      [:link {:rel "manifest" :href "manifest.json"}]
      (include-css (if (env :dev) "css/site.css" "css/site.min.css"))
      [:script {:type "application/javascript" :src "sortable/Sortable.min.js"}]]
