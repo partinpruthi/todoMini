@@ -1,5 +1,7 @@
 # OMG Not Another TODO App #
 
+![Screenshot](./screenshot.png)
+
 Simple TODO list app requirements:
 
  * Web based.
