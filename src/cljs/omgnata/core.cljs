@@ -15,6 +15,7 @@
 
 ; NOTE: these don't actually work in prod mode yet
 (def server-url (if (get-env :dev) (str (.replace (-> js/document .-location .-href) ":3449" ":8000") "server.php") "server.php"))
+(def poller-time (if (get-env :dev) 5 30))
 
 (secretary/set-config! :prefix "#")
 
@@ -138,7 +139,7 @@
     (ajax-request {:uri server-url
                    :method :get
                    :params {:timestamp timestamp
-                            :live_for (if (get-env :dev) 5 30)}
+                            :live_for poller-time}
                    :with-credentials true
                    :response-format (json-response-format)
                    :handler #(put! c %)})
