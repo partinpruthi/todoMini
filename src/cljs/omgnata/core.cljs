@@ -177,7 +177,7 @@
                 (when (and ok (not (= @file-timestamps timestamps)) timestamps)
                   (print "creation timestamps:" timestamps)
                   (reset! file-timestamps timestamps))  
-                (when (and ok (not (= @todos transformed-todos)) (> (result "timestamp") last-timestamp))
+                (when (and ok (result "files") (not (= @todos transformed-todos)) (> (result "timestamp") last-timestamp))
                   (print "long-poller result:" last-timestamp ok result)
                   (reset! todos transformed-todos)))
               (<! (timeout 1000))

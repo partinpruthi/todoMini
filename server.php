@@ -50,7 +50,7 @@ function dirPoller($datadir) {
   // start the wait-poll loop
   while ($live_for--) {
     // if ajax request has send a timestamp, then $last_ajax_call = timestamp, else $last_ajax_call = null
-    $last_ajax_call = isset($_GET['timestamp']) ? (int)$_GET['timestamp'] : null;
+    $last_ajax_call = isset($_GET['timestamp']) ? (float)$_GET['timestamp'] : null;
     // get timestamp of when file has been changed the last time
     $last_change_in_data_files = dirTimestamp($datadir);
     // if no timestamp delivered via ajax or data.txt has been changed SINCE last ajax timestamp
@@ -96,12 +96,12 @@ function dirFiles($datadir) {
 function dirTimestamp($datadir) {
   // PHP caches file data, like requesting the size of a file, by default. clearstatcache() clears that cache
   clearstatcache();
-  $timestamp = filemtime($datadir . "/.");
+  $timestamp = filemtime_precise($datadir . "/.");
   if ($dh = opendir($datadir)){
     while (($filename = readdir($dh)) !== false){
       if (endsWith($filename, ".txt")) {
         $filepath = $datadir . "/" . $filename;
-        $file_timestamp = filemtime($filepath);
+        $file_timestamp = filemtime_precise($filepath);
         if ($file_timestamp > $timestamp) {
           $timestamp = $file_timestamp;
         }
@@ -120,6 +120,15 @@ function endsWith($string, $test) {
   $testlen = strlen($test);
   if ($testlen > $strlen) return false;
   return substr_compare($string, $test, $strlen - $testlen, $testlen) === 0;
+}
+
+
+// get precise file modification time (including milliseconds)
+// http://stackoverflow.com/a/20248406/2131094
+function filemtime_precise($path){
+    $dateUnix = shell_exec('stat --format "%y" \'' . $path . '\'');
+    $date = explode(".", $dateUnix);
+    return (float)(filemtime($path).".".substr($date[1], 0, 8));
 }
 
 function cors() {
