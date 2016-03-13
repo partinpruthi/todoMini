@@ -8,7 +8,7 @@ Simple TODO list app requirements:
  * Allows multiple people to update a list.
  * Simple text based format for easy editing (see below).
 
-This did not exist, so I have built it.
+Surprisingly, I could not find software meeting these criteria.
 
 ### Deploy ###
 
@@ -22,7 +22,7 @@ Copy `./example.htaccess` to `.htaccess` and edit it.
 
 ### Multi-user ###
 
-If you want multiple users, clone the directory for each user and create a unique login for each.
+If you have multiple users, clone the directory for each user and create a unique htaccess login for each.
 
 To create a shared list, symlink one of the TODO list files into each user's data directory.
 
