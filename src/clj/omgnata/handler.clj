@@ -35,3 +35,7 @@
   (not-found "Not Found"))
 
 (def app (wrap-middleware #'routes))
+
+(defn index-html []
+  "output the HTML as a string"
+  (print (apply str loading-page)))
