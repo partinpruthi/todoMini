@@ -354,13 +354,15 @@
            [:input {:on-change #(reset! new-item (-> % .-target .-value)) :on-key-down #(if (= (.-which %) 13) (update-fn %)) :value @new-item}]
            [:i#add-item-done.btn {:on-click update-fn :class "fa fa-check-circle"}]])]
        [:ul {}
-        (doall (map-indexed (fn [idx [filename todo-list]]
-                              (let [fname (no-extension filename)]
-                                [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2))}
-                                 (if @add-mode [:i.delete-list.btn {:on-click (partial delete-todo-list-handler todos filename add-mode) :class "fa fa-minus-circle"}])
-                                 [:span {:on-click #(secretary/dispatch! (str "/todo/" fname))} fname]]))
-                            ; sort by the creation time timestamps the server has sent, defaulting to infinity (for newly created files)
-                            (sort #(compare (or (@timestamps (first %2)) js/Number.MAX_VALUE) (or (@timestamps (first %1)) js/Number.MAX_VALUE)) @todos)))]])))
+        (if (count @todos)
+          (doall (map-indexed (fn [idx [filename todo-list]]
+                                (let [fname (no-extension filename)]
+                                  [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2))}
+                                   (if @add-mode [:i.delete-list.btn {:on-click (partial delete-todo-list-handler todos filename add-mode) :class "fa fa-minus-circle"}])
+                                   [:span {:on-click #(secretary/dispatch! (str "/todo/" fname))} fname]]))
+                              ; sort by the creation time timestamps the server has sent, defaulting to infinity (for newly created files)
+                              (sort #(compare (or (@timestamps (first %2)) js/Number.MAX_VALUE) (or (@timestamps (first %1)) js/Number.MAX_VALUE)) @todos)))
+          [:li "No TODOs yet."])]])))
 
 (defn current-page []
   [:div [(session/get :current-page)]])
