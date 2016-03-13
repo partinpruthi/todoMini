@@ -45,6 +45,8 @@ function dirPoller($datadir) {
   // tell PHP it can timeout after 30 seconds
   set_time_limit($live_for);
   ini_set("max_execution_time", $live_for);
+  // whether the loop has returned anything or not
+  $has_returned = false;
   // start the wait-poll loop
   while ($live_for--) {
     // if ajax request has send a timestamp, then $last_ajax_call = timestamp, else $last_ajax_call = null
@@ -60,12 +62,16 @@ function dirPoller($datadir) {
         // encode to JSON, render the result (for AJAX)
         echo json_encode($data);
         // leave this loop step
+        $has_returned = true;
         break;
     } else {
         // block for 1 second
         sleep(1);
         continue;
     }
+  }
+  if (!$has_returned) {
+    echo json_encode(array("timestamp" => $last_change_in_data_files));
   }
 }
 
