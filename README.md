@@ -8,6 +8,7 @@ Simple TODO list app requirements:
  * Easy to deploy.
  * Self-hosted & FLOSS.
  * Allows multiple people to update a list.
+ * Mobile friendly - "Add to Home Screen" webapp.
  * Simple text based format for easy editing (see below).
 
 Surprisingly, I could not find software meeting these criteria.
