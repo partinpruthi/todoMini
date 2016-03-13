@@ -1,17 +1,22 @@
 (ns omgnata.core
-    (:require [reagent.core :as reagent :refer [atom dom-node]]
-              [reagent.session :as session]
-              [secretary.core :as secretary :include-macros true]
-              [accountant.core :as accountant]
-              [ajax.core :refer [GET POST ajax-request json-response-format raw-response-format url-request-format]]
-              [cljs.core.async :refer [<! chan close! put! timeout]])
-    (:require-macros 
-              [omgnata.env :refer [get-env]]
-              [cljs.core.async.macros :refer [go]]))
+  (:require [reagent.core :as reagent :refer [atom dom-node]]
+            [reagent.session :as session]
+            [secretary.core :as secretary :include-macros true]
+            [ajax.core :refer [GET POST ajax-request json-response-format raw-response-format url-request-format]]
+            [cljs.core.async :refer [<! chan close! put! timeout]]
+            [goog.events :as events]
+            [goog.history.EventType :as EventType])
+  (:require-macros 
+    [omgnata.env :refer [get-env]]
+    [cljs.core.async.macros :refer [go]])
+  (:import goog.History))
 
 (enable-console-print!)
 
+; NOTE: these don't actually work in prod mode yet
 (def server-url (if (get-env :dev) (str (.replace (-> js/document .-location .-href) ":3449" ":8000") "server.php") "server.php"))
+
+(secretary/set-config! :prefix "#")
 
 (defonce instance (atom 0))
 (defonce todo-lists (atom {}))
@@ -377,6 +382,15 @@
   (session/put! :current-page (todo-page todo-lists fname)))
 
 ;; -------------------------
+;; History
+
+;; Quick and dirty history configuration.
+(defn hook-browser-navigation! []
+  (let [h (History.)]
+    (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
+    (doto h (.setEnabled true))))
+
+;; -------------------------
 ;; Initialize app
 
 ; initiate the long-poller
@@ -389,6 +403,5 @@
   (reagent/render [current-page] (.getElementById js/document "app")))
 
 (defn init! []
-  (accountant/configure-navigation!)
-  (accountant/dispatch-current!)
+  (hook-browser-navigation!)
   (mount-root))
