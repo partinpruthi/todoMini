@@ -13,15 +13,16 @@ Simple TODO list app requirements:
 
 Surprisingly, I could not find software meeting these criteria.
 
-### Deploy ###
+### Install ###
 
-Copy the files to your PHP web hosting.
+ * Download [a release](https://github.com/chr15m/omgnata/releases) or `git clone` the `gh-pages` branch.
+ * Copy the files to your PHP web hosting.
 
-Create a password file:
+To require authentication, first create a password file:
 
 	htpasswd -c /path/to/.htpasswd username
 
-Copy `./example.htaccess` to `.htaccess` and edit it.
+Then copy `./example.htaccess` to `.htaccess` and edit it.
 
 ### Multi-user ###
 
