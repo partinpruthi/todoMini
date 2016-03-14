@@ -37,3 +37,6 @@ The TODO lists use standard Markdown format:
 	 * [ ] Another uncompleted item.
 	 * [ ] Something else.
 
+### License ###
+
+Copyright Chris McCormick, 2016. [GPLv3 licensed](./LICENSE.txt).

@@ -1,6 +1,6 @@
 NAME=$(shell basename `pwd`)
 RESOURCES_NAMES=css/site.css font-awesome/css font-awesome/fonts manifest.json sortable/Sortable.min.js img
-SERVER_FILES=server.php example.htaccess data/
+SERVER_FILES=server.php example.htaccess LICENSE.txt data/
 
 RESOURCES_SRC=$(addprefix resources/public/, $(RESOURCES_NAMES))
 RESOURCES=$(addprefix build/, $(RESOURCES_NAMES))
