@@ -1,0 +1,4 @@
+.htaccess
+.htpasswd
+data/*.txt
+.*.swp

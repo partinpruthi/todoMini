@@ -1,0 +1,5 @@
+AuthUserFile /path/to/.htpasswd
+AuthGroupFile /dev/null
+AuthName TODOList
+AuthType Basic
+require valid-user
