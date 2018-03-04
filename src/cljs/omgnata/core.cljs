@@ -265,7 +265,13 @@
 
 (defn switch-to-todo [fname ev]
   (.preventDefault ev)
-  (secretary/dispatch! (str "/todo/" fname)))
+  (secretary/dispatch! (str "/" fname))
+  (.pushState js/history nil nil (str "#" fname)))
+
+(defn go-home [ev]
+  (.preventDefault ev)
+  (secretary/dispatch! "/")
+  (.pushState js/history nil nil (str js/window.location.pathname js/window.location.search)))
 
 ;; -------------------------
 ;; Views
@@ -336,7 +342,7 @@
         item-done-fn (partial add-todo-item-handler todos filename new-item-title add-mode)]
     (fn []
       [:div.todo-page
-       [:i#back.btn {:on-click #(secretary/dispatch! "/") :class "fa fa-chevron-circle-left"}]
+       [:i#back.btn {:on-click go-home :class "fa fa-chevron-circle-left"}]
        [:h3.list-title filename]
        [:span#add-item.btn {:on-click #(swap! add-mode not) :class "fa fa-stack"}
         [:i {:class "fa fa-stack-2x fa-circle"}]
@@ -383,7 +389,7 @@
 (secretary/defroute "/" []
   (session/put! :current-page (lists-page todo-lists todo-timestamps)))
 
-(secretary/defroute "/todo/:fname" [fname]
+(secretary/defroute "/:fname" [fname]
   (session/put! :current-page (todo-page todo-lists fname)))
 
 ;; -------------------------
