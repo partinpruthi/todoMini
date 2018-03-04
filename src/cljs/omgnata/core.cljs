@@ -180,7 +180,7 @@
                 )
               (let [transformed-todos (transform-text-todos (result "files"))
                     timestamps (into {} (map (fn [[fname timestamp]] [(no-extension fname) timestamp]) (result "creation_timestamps")))]
-                (when (and ok (not (= @file-timestamps timestamps)) timestamps)
+                (when (and ok (not (= @file-timestamps timestamps)) timestamps (> (count timestamps) 0))
                   (print "creation timestamps:" timestamps)
                   (reset! file-timestamps timestamps))  
                 (when (and ok (result "files") (not (= @todos transformed-todos)) (> (result "timestamp") last-timestamp))
