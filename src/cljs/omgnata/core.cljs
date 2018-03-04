@@ -263,6 +263,10 @@
     (delete-file fname))
   (.preventDefault ev))
 
+(defn switch-to-todo [fname ev]
+  (.preventDefault ev)
+  (secretary/dispatch! (str "/todo/" fname)))
+
 ;; -------------------------
 ;; Views
 
@@ -365,7 +369,7 @@
                                 (let [fname (no-extension filename)]
                                   [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2))}
                                    (if @add-mode [:i.delete-list.btn {:on-click (partial delete-todo-list-handler todos filename add-mode) :class "fa fa-minus-circle"}])
-                                   [:span {:on-click #(secretary/dispatch! (str "/todo/" fname))} fname]]))
+                                   [:span {:on-click (partial switch-to-todo fname)} fname]]))
                               ; sort by the creation time timestamps the server has sent, defaulting to infinity (for newly created files)
                               (sort #(compare (or (@timestamps (first %2)) js/Number.MAX_VALUE) (or (@timestamps (first %1)) js/Number.MAX_VALUE)) @todos)))
           [:li "No TODOs yet."])]])))
