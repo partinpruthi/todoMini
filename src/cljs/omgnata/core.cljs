@@ -290,7 +290,7 @@
    (fn []
      [:textarea.edit-item-text {:value @item-title
                                 :on-change #(reset! item-title (-> % .-target .-value))
-                               :on-key-down (fn [ev] (when (= (.-which ev) 13) (item-done-fn ev) (.preventDefault ev)))     
+                                :on-key-down (fn [ev] (when (= (.-which ev) 13) (item-done-fn ev) (.preventDefault ev)))
                                 :on-blur (fn [ev] 
                                            ; Ugh - hack
                                            (js/setTimeout #(swap! edit-mode not) 100))}])])
