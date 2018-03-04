@@ -182,7 +182,7 @@
                     timestamps (into {} (map (fn [[fname timestamp]] [(no-extension fname) timestamp]) (result "creation_timestamps")))]
                 (when (and ok (not (= @file-timestamps timestamps)) timestamps (> (count timestamps) 0))
                   (print "creation timestamps:" timestamps)
-                  (reset! file-timestamps timestamps))  
+                  (reset! file-timestamps timestamps))
                 (when (and ok (result "files") (not (= @todos transformed-todos)) (> (result "timestamp") last-timestamp))
                   (print "long-poller result:" last-timestamp ok result)
                   (reset! todos transformed-todos)))
@@ -196,8 +196,8 @@
   (let [todo-list (@todos fname)]
     (update-file fname (reassemble-todos
                          ((swap! todos #(-> %
-                              (update-in [fname (todo :index) :checked] not)
-                              (re-compute-indices fname)))
+                                            (update-in [fname (todo :index) :checked] not)
+                                            (re-compute-indices fname)))
                           fname)))))
 
 (defn delete-item-handler [todos fname todo ev]
@@ -218,8 +218,8 @@
   (let [todo-list (@todos fname)]
     (update-file fname (reassemble-todos
                          ((swap! todos #(-> %
-                              (assoc-in [fname (todo :index) :title] @item-title)
-                              (re-compute-indices fname)))
+                                            (assoc-in [fname (todo :index) :title] @item-title)
+                                            (re-compute-indices fname)))
                           fname)))))
 
 (defn add-todo-item-handler [todos fname new-item-title add-mode ev]
