@@ -332,9 +332,11 @@
 (defn component-list-of-todos [todos filename add-mode]
   [(with-sortable-wrapper todos filename)
    (fn []
-     [:ul {:key filename}
-      (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todos filename todo) idx todo add-mode])
-                          (filter :matched (@todos filename))))])])
+     (if (> (count @todos) 0)
+       [:ul {:key filename}
+        (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todos filename todo) idx todo add-mode])
+                            (filter :matched (@todos filename))))]
+       [:div#loader [:div]]))])
 
 (defn todo-page [todos filename]
   (let [add-mode (atom false)
