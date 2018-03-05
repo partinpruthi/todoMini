@@ -23,9 +23,9 @@ function updateFile($update, $dir) {
   $filename = basename($update["filename"]);
   if (endsWith($filename, ".txt")) {
     file_put_contents($dir . "/" . $filename, isset($update["content"]) ? $update["content"] : "");
-    echo json_encode("success");
+    echo json_encode(microtime(True));
   } else {
-    echo json_encode("bad request");
+    echo json_encode(null);
   }
 }
 
@@ -33,9 +33,9 @@ function deleteFile($delete, $dir) {
   $filename = $dir . "/" . basename($delete["delete"]);
   if (endsWith($filename, ".txt") && file_exists($filename)) {
     unlink($filename);
-    echo json_encode("success");
+    echo json_encode(microtime(True));
   } else {
-    echo json_encode("bad request");
+    echo json_encode(null);
   }
 }
 
