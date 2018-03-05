@@ -22,6 +22,7 @@
 (defonce instance (atom 0))
 (defonce todo-lists (atom {}))
 (defonce todo-timestamps (atom {}))
+(defonce last-timestamp (atom 0))
 
 (def re-todo-finder #"[\ \t]*\*[\ \t]*\[(.*?)\]")
 (def re-todo-parser #"[\ \t]*\*[\ \t]*\[(.*?)\][\ \t]*(.*?)[\n$]([\s\S]*)")
@@ -159,7 +160,10 @@
                  :with-credentials true
                  :response-format (json-response-format)
                  ; TODO: handle result
-                 :handler #(print "update-file result:" %)}))
+                 :handler (fn [[ok result]]
+                            (print "update-file result:" ok (clj->js result))
+                            (if (and ok (not (nil? result)))
+                              (reset! last-timestamp result)))}))
 
 (defn delete-file [fname]
   "Ask the server to delete a single file."
@@ -169,29 +173,37 @@
                  :params {:delete (str fname ".txt")}
                  :with-credentials true
                  :response-format (json-response-format)
-                 :handler #(print "Delete-file result:" %)}))
+                 :handler (fn [[ok result]]
+                            (print "delete-file result:" ok (clj->js result))
+                            (if (and ok (not (nil? result)))
+                              (reset! last-timestamp result)))}))
 
 (defn long-poller [todos file-timestamps instance-id]
   "Continuously poll the server updating the todos atom when the textfile data changes."
-  (go (loop [last-timestamp 0]
-          (print "Long poller initiated:" instance-id "timestamp:" last-timestamp)
-          ; don't fire off more than 1 time per second
-          (let [[ok result] (<! (get-files last-timestamp))]
-            ; if we have fired off a new instance don't use this one
-            (when (= instance-id @instance)
-              (when (not ok)
-                ; this happens with the poller timeout so we can't use it d'oh
-                )
-              (let [transformed-todos (transform-text-todos (result "files"))
-                    timestamps (into {} (map (fn [[fname timestamp]] [(no-extension fname) timestamp]) (result "creation_timestamps")))]
-                (when (and ok (not (= @file-timestamps timestamps)) timestamps (> (count timestamps) 0))
-                  (js/console.log "creation timestamps:" (clj->js timestamps))
-                  (reset! file-timestamps timestamps))
-                (when (and ok (result "files") (not (= @todos transformed-todos)) (> (result "timestamp") last-timestamp))
-                  (js/console.log "long-poller result:" last-timestamp ok (clj->js result))
-                  (reset! todos transformed-todos)))
-              (<! (timeout 1000))
-              (recur (or (result "timestamp") last-timestamp)))))))
+  (go (loop []
+        (print "Long poller initiated:" instance-id "timestamp:" @last-timestamp)
+        ; don't fire off more than 1 time per second
+        (let [[ok result] (<! (get-files @last-timestamp))]
+          ; if we have fired off a new instance don't use this one
+          (when (= instance-id @instance)
+            (js/console.log "Long poller result:" (clj->js result))
+            (if (>= (result "timestamp") @last-timestamp)
+              (do
+                (reset! last-timestamp (result "timestamp"))
+                (when (not ok)
+                  ; this happens with the poller timeout so we can't use it d'oh
+                  )
+                (let [transformed-todos (transform-text-todos (result "files"))
+                      timestamps (into {} (map (fn [[fname timestamp]] [(no-extension fname) timestamp]) (result "creation_timestamps")))]
+                  (when (and ok (not (= @file-timestamps timestamps)) timestamps (> (count timestamps) 0))
+                    (js/console.log "creation timestamps:" (clj->js timestamps))
+                    (reset! file-timestamps timestamps))
+                  (when (and ok (result "files") (not (= @todos transformed-todos)))
+                    (js/console.log "long-poller result:" @last-timestamp ok (clj->js result))
+                    (reset! todos transformed-todos))))
+              (js/console.log "Ignoring old data:" (clj->js result)))
+            (<! (timeout 1000))
+            (recur))))))
 
 ;***** event handlers *****;
 
