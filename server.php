@@ -128,7 +128,8 @@ function endsWith($string, $test) {
 function filemtime_precise($path){
     $dateUnix = shell_exec('stat --format "%y" \'' . $path . '\'');
     $date = explode(".", $dateUnix);
-    return (float)(filemtime($path).".".substr($date[1], 0, 8));
+    $assembled = filemtime($path).".".substr($date[1], 0, 8);
+    return (float)($assembled);
 }
 
 function cors() {
