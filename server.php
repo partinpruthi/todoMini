@@ -1,9 +1,10 @@
 <?php
 /**
- * Infinite looping PHP long-poller.
+ * Server component for storing and retrieving lists on the server.
  * NOTE: this is unauthenticated so put it behind e.g. htaccess and HTTPS
  */
-// original from here:
+
+// original PHP long-poller code from here:
 // https://github.com/panique/php-long-polling/blob/master/server/server.php
 
 // enable cors
@@ -23,9 +24,9 @@ function updateFile($update, $dir) {
   $filename = basename($update["filename"]);
   if (endsWith($filename, ".txt")) {
     file_put_contents($dir . "/" . $filename, isset($update["content"]) ? $update["content"] : "");
-    echo json_encode("success");
+    echo makeUpdate($dir);
   } else {
-    echo json_encode("bad request");
+    echo json_encode(false);
   }
 }
 
@@ -33,9 +34,9 @@ function deleteFile($delete, $dir) {
   $filename = $dir . "/" . basename($delete["delete"]);
   if (endsWith($filename, ".txt") && file_exists($filename)) {
     unlink($filename);
-    echo json_encode("success");
+    echo makeUpdate($dir);
   } else {
-    echo json_encode("bad request");
+    echo json_encode(false);
   }
 }
 
@@ -55,12 +56,8 @@ function dirPoller($datadir) {
     $last_change_in_data_files = dirTimestamp($datadir);
     // if no timestamp delivered via ajax or data.txt has been changed SINCE last ajax timestamp
     if ($last_ajax_call == null || $last_change_in_data_files > $last_ajax_call) {
-        // get content of data.txt
-        $data = dirFiles($datadir);
-        // put data.txt's content and timestamp of last data.txt change into array
-        $data["timestamp"] = $last_change_in_data_files;
-        // encode to JSON, render the result (for AJAX)
-        echo json_encode($data);
+        // send the updated view of the data dir
+        echo makeUpdate($datadir);
         // leave this loop step
         $has_returned = true;
         break;
@@ -73,6 +70,15 @@ function dirPoller($datadir) {
   if (!$has_returned) {
     echo json_encode(array("timestamp" => $last_change_in_data_files));
   }
+}
+
+function makeUpdate($dir) {
+  // get content of data.txt
+  $data = dirFiles($dir);
+  // put data.txt's content and timestamp of last data.txt change into array
+  $data["timestamp"] = dirTimestamp($dir);
+  // encode to JSON, render the result (for AJAX)
+  return json_encode($data);
 }
 
 // Open a directory, and read its contents
