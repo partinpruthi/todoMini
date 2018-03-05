@@ -105,10 +105,14 @@
 (defn reassemble-todos [todo-items]
   "Take an array of TODO list state dictionaries and then them back into text blob."
   (apply str (map
-         #(if (% :matched)
-            (str " * [" (if (% :checked) "x" " ") "] " (% :title) "\n" (% :details))
-            (% :source))
-         todo-items)))
+               #(if (% :matched)
+                  (str " * [" (if (% :checked) "x" " ") "] " (% :title) "\n" (% :details))
+                  (let [txt (% :source)]
+                    (print (type txt))
+                    (if (= (type txt) (type (js/String)))
+                      txt
+                      (js/console.log "Ignoring spurious TODO data:" (clj->js txt)))))
+               todo-items)))
 
 ;***** Manipulating data strcutures *****;
 
@@ -181,10 +185,10 @@
               (let [transformed-todos (transform-text-todos (result "files"))
                     timestamps (into {} (map (fn [[fname timestamp]] [(no-extension fname) timestamp]) (result "creation_timestamps")))]
                 (when (and ok (not (= @file-timestamps timestamps)) timestamps (> (count timestamps) 0))
-                  (print "creation timestamps:" timestamps)
+                  (js/console.log "creation timestamps:" (clj->js timestamps))
                   (reset! file-timestamps timestamps))
                 (when (and ok (result "files") (not (= @todos transformed-todos)) (> (result "timestamp") last-timestamp))
-                  (print "long-poller result:" last-timestamp ok result)
+                  (js/console.log "long-poller result:" last-timestamp ok (clj->js result))
                   (reset! todos transformed-todos)))
               (<! (timeout 1000))
               (recur (or (result "timestamp") last-timestamp)))))))
