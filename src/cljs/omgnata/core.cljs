@@ -19,9 +19,13 @@
 
 (secretary/set-config! :prefix "#")
 
+(def initial-state
+  {:last-timestamp 0
+   :timestamps {}
+   :todos {}})
+
 (defonce instance (atom 0))
-(defonce todo-lists (atom {}))
-(defonce todo-timestamps (atom {}))
+(defonce app-state (atom initial-state))
 
 (def re-todo-finder #"[\ \t]*\*[\ \t]*\[(.*?)\]")
 (def re-todo-parser #"[\ \t]*\*[\ \t]*\[(.*?)\][\ \t]*(.*?)[\n$]([\s\S]*)")
@@ -131,6 +135,19 @@
 
 ;***** Network functions *****;
 
+(defn process-new-data! [previous-data msg [ok result]]
+  (js/console.log msg ok (clj->js result))
+  (let [last-timestamp (previous-data :last-timestamp)]
+    (if (and ok (> (result "timestamp") last-timestamp))
+      (let [transformed-todos (transform-text-todos (result "files"))
+            timestamps (into {} (map (fn [[fname timestamp]] [(no-extension fname) timestamp]) (result "creation_timestamps")))]
+        (if (and timestamps (count timestamps))
+          {:todos transformed-todos
+           :timestamps timestamps
+           :last-timestamp (result "timestamp")}
+          (do (print "Using previous data - bad timestamps") previous-data)))
+      (do (print "Using previous data - not sooner") previous-data))))
+
 (defn get-files [timestamp]
   "Ask the server for a list of text files.
   Server blocks if none since timestamp.
@@ -155,7 +172,7 @@
                  :with-credentials true
                  :response-format (json-response-format)
                  ; TODO: handle result
-                 :handler #(print "update-file result:" %)}))
+                 :handler #(swap! app-state process-new-data! "update-file result:" %)}))
 
 (defn delete-file [fname]
   "Ask the server to delete a single file."
@@ -165,29 +182,19 @@
                  :params {:delete (str fname ".txt")}
                  :with-credentials true
                  :response-format (json-response-format)
-                 :handler #(print "Delete-file result:" %)}))
+                 :handler #(swap! app-state process-new-data! "delete-file result:" %)}))
 
-(defn long-poller [todos file-timestamps instance-id]
+(defn long-poller [app-state instance-id]
   "Continuously poll the server updating the todos atom when the textfile data changes."
-  (go (loop [last-timestamp 0]
-          (print "Long poller initiated:" instance-id "timestamp:" last-timestamp)
+  (go (loop []
+          (print "Long poller initiated:" instance-id "timestamp:" (@app-state :last-timestamp))
           ; don't fire off more than 1 time per second
-          (let [[ok result] (<! (get-files last-timestamp))]
+          (let [response (<! (get-files (@app-state :last-timestamp)))]
             ; if we have fired off a new instance don't use this one
             (when (= instance-id @instance)
-              (when (not ok)
-                ; this happens with the poller timeout so we can't use it d'oh
-                )
-              (let [transformed-todos (transform-text-todos (result "files"))
-                    timestamps (into {} (map (fn [[fname timestamp]] [(no-extension fname) timestamp]) (result "creation_timestamps")))]
-                (when (and ok (not (= @file-timestamps timestamps)) timestamps (> (count timestamps) 0))
-                  (print "creation timestamps:" timestamps)
-                  (reset! file-timestamps timestamps))
-                (when (and ok (result "files") (not (= @todos transformed-todos)) (> (result "timestamp") last-timestamp))
-                  (print "long-poller result:" last-timestamp ok result)
-                  (reset! todos transformed-todos)))
+              (swap! app-state process-new-data! "poller result:" response)
               (<! (timeout 1000))
-              (recur (or (result "timestamp") last-timestamp)))))))
+              (recur))))))
 
 ;***** event handlers *****;
 
@@ -336,8 +343,10 @@
       (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todos filename todo) idx todo add-mode])
                           (filter :matched (@todos filename))))])])
 
-(defn todo-page [todos filename]
-  (let [add-mode (atom false)
+(defn todo-page [app-state filename]
+  (let [todos (reagent/cursor app-state [:todos])
+        timestamps (reagent/cursor app-state [:timestamps])
+        add-mode (atom false)
         new-item-title (atom "")
         item-done-fn (partial add-todo-item-handler todos filename new-item-title add-mode)]
     (fn []
@@ -355,8 +364,10 @@
           [:i#add-item-done.btn {:on-click item-done-fn :class "fa fa-check-circle"}]])
        [component-list-of-todos todos filename add-mode]])))
 
-(defn lists-page [todos timestamps]
-  (let [add-mode (atom false)
+(defn lists-page [app-state]
+  (let [todos (reagent/cursor app-state [:todos])
+        timestamps (reagent/cursor app-state [:timestamps])
+        add-mode (atom false)
         new-item (atom "")
         update-fn (partial add-todo-list-handler todos new-item add-mode)]
     (fn []
@@ -387,10 +398,10 @@
 ;; Routes
 
 (secretary/defroute "/" []
-  (session/put! :current-page (lists-page todo-lists todo-timestamps)))
+  (session/put! :current-page (lists-page app-state)))
 
 (secretary/defroute "/:fname" [fname]
-  (session/put! :current-page (todo-page todo-lists fname)))
+  (session/put! :current-page (todo-page app-state fname)))
 
 ;; -------------------------
 ;; History
@@ -405,10 +416,7 @@
 ;; Initialize app
 
 ; initiate the long-poller
-(long-poller todo-lists todo-timestamps (swap! instance inc))
-
-; tell react to handle touch events
-(.initializeTouchEvents js/React true)
+(long-poller app-state (swap! instance inc))
 
 (defn mount-root []
   (reagent/render [current-page] (.getElementById js/document "app")))

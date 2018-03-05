@@ -6,7 +6,7 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [ring-server "0.4.0"]
-                 [reagent "0.5.1"
+                 [reagent "0.7.0"
                   :exclusions [org.clojure/tools.reader]]
                  [reagent-forms "0.5.16"]
                  [reagent-utils "0.1.7"]
@@ -15,7 +15,7 @@
                  [compojure "1.4.0"]
                  [hiccup "1.0.5"]
                  [environ "1.0.2"]
-                 [org.clojure/clojurescript "1.7.228"
+                 [org.clojure/clojurescript "1.9.946"
                   :scope "provided"]
                  [secretary "1.2.3"]
                  [venantius/accountant "0.1.6"
