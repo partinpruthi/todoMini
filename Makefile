@@ -27,7 +27,7 @@ $(SERVER): $(SERVER_FILES)
 	@touch $@
 
 $(IDX): src/clj/*/*.clj
-	lein run -m $(NAME).handler/index-html > $(IDX)
+	lein run -m omgnata.handler/index-html > $(IDX)
 
 clean:
 	rm -rf $(TARGETS) build
