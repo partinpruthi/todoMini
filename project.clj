@@ -40,20 +40,19 @@
                                     [:cljsbuild :builds :app :compiler :output-dir]
                                     [:cljsbuild :builds :app :compiler :output-to]]
 
-  :source-paths ["src/clj" "src/cljc"]
+  :source-paths ["src/clj"]
   :resource-paths ["resources" "target/cljsbuild"]
 
-  :minify-assets
-  {:assets
-   {"resources/public/css/site.min.css" "resources/public/css/site.css"}}
+  :minify-assets {:assets {"build/css/site.min.css" "resources/public/css/site.css"}}
 
-  :cljsbuild {:builds {:app {:source-paths ["src/cljs" "src/cljc"]
+  :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs" "src/cljs"]
                              :compiler {:output-to "target/cljsbuild/public/js/app.js"
                                         :output-dir "target/cljsbuild/public/js/out"
                                         :asset-path "js/out"
+                                        :main "omgnata.dev"
                                         :optimizations :none
                                         :pretty-print true}}
-                       :min {:source-paths ["env/prod/cljs" "src/cljs" "src/cljc"]
+                       :min {:source-paths ["env/prod/cljs" "src/cljs"]
                              :compiler {:output-to "build/js/app.js"
                                         :main "omgnata.prod"
                                         :optimizations :advanced
@@ -76,8 +75,7 @@
                                                 org.clojure/tools.analyzer.jvm]]
                                   [org.clojure/tools.nrepl "0.2.12"]
                                   [com.cemerick/piggieback "0.2.1"]
-                                  [pjstadig/humane-test-output "0.7.1"]
-                                  ]
+                                  [pjstadig/humane-test-output "0.7.1"]]
 
                    :source-paths ["env/dev/clj"]
                    :plugins [[lein-figwheel "0.5.0-6"
@@ -89,8 +87,7 @@
                                            org.clojure/tools.reader
                                            org.clojure/clojurescript
                                            org.clojure/core.async
-                                           org.clojure/tools.analyzer.jvm]]
-                             ]
+                                           org.clojure/tools.analyzer.jvm]]]
 
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]
@@ -98,31 +95,7 @@
                    :figwheel {:http-server-root "public"
                               :server-port 3449
                               :nrepl-port 7002
-                              :nrepl-middleware ["cemerick.piggieback/wrap-cljs-repl"
-                                                 ]
+                              :nrepl-middleware ["cemerick.piggieback/wrap-cljs-repl"]
                               :css-dirs ["resources/public/css"]
-                              :ring-handler omgnata.handler/app}
+                              :ring-handler omgnata.handler/app}}})
 
-                   :env {:dev "true"}
-
-                   :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
-                                              :compiler {:main "omgnata.dev"
-                                                         :source-map true}}
-
-
-
-                                        }
-                               }}
-
-             :uberjar {:hooks [minify-assets.plugin/hooks]
-                       :source-paths ["env/prod/clj"]
-                       :prep-tasks ["compile" ["cljsbuild" "once"]]
-                       :env {:production "true"}
-                       :aot :all
-                       :omit-source true
-                       :cljsbuild {:jar true
-                                   :builds {:app
-                                            {:source-paths ["env/prod/cljs"]
-                                             :compiler
-                                             {:optimizations :advanced
-                                              :pretty-print false}}}}}})

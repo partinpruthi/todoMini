@@ -7,15 +7,13 @@
             [goog.events :as events]
             [goog.history.EventType :as EventType])
   (:require-macros 
-    [omgnata.env :refer [get-env]]
     [cljs.core.async.macros :refer [go]])
   (:import goog.History))
 
 (enable-console-print!)
 
-; NOTE: these don't actually work in prod mode yet
-(def server-url (if (get-env :dev) (str (.replace (-> js/document .-location .-href) ":3449" ":8000") "server.php") "server.php"))
-(def poller-time (if (get-env :dev) 5 30))
+(def server (atom {:url (str (.replace (-> js/document .-location .-href) ":3449" ":8000") "server.php")
+                   :poller-time 5}))
 
 (secretary/set-config! :prefix "#")
 
@@ -141,10 +139,10 @@
   Server blocks if none since timestamp.
   Returns a dictionary of :filename to text mappings."
   (let [c (chan)]
-    (ajax-request {:uri server-url
+    (ajax-request {:uri (@server :url)
                    :method :get
                    :params {:timestamp timestamp
-                            :live_for poller-time}
+                            :live_for (@server :poller-time)}
                    :with-credentials true
                    :response-format (json-response-format)
                    :handler #(put! c %)})
@@ -152,7 +150,7 @@
 
 (defn update-file [fname text]
   "Ask the server to update a particular text file with text contents."
-  (ajax-request {:uri server-url
+  (ajax-request {:uri (@server :url)
                  :method :post
                  :format (url-request-format)
                  :params {:filename (str fname ".txt")
@@ -168,7 +166,7 @@
 (defn delete-file [fname]
   "Ask the server to delete a single file."
   ; not RESTful because PHP doesn't support DELETE parameters well
-  (ajax-request {:uri server-url
+  (ajax-request {:uri (@server :url)
                  :method :get
                  :params {:delete (str fname ".txt")}
                  :with-credentials true
@@ -432,6 +430,11 @@
 (defn mount-root []
   (reagent/render [current-page] (.getElementById js/document "app")))
 
-(defn init! []
+(defn init! [& [prod]]
+  (if prod
+    (swap! server assoc
+           :url "server.php"
+           :poller-time 30)
+    (js/console.log "dev mode"))
   (hook-browser-navigation!)
   (mount-root))
