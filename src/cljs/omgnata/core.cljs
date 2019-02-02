@@ -266,6 +266,13 @@
                                       (re-compute-indices filename)))
                     filename)))))
 
+(defn apply-sortable [todos filename this]
+  (js/console.log "Sortable wrapping.")
+  (.create js/Sortable
+           (dom-node this)
+           #js {:handle ".handle"
+                :onEnd (partial finished-sorting-handler todos filename)}))
+
 (defn add-todo-list-handler [todos new-item add-mode ev]
   (update-file @new-item (swap! todos assoc @new-item []))
   (reset! new-item "")
@@ -299,15 +306,6 @@
                                                (let [node (dom-node this)
                                                      content-length (.-length (.-value node))]
                                                  (if (= 0 content-length) (get-focus this))))}))
-
-(defn with-sortable-wrapper [todos filename]
-  (with-meta identity {:component-did-mount
-                       (fn [this]
-                         (print "sortable wrapping")
-                         (.create js/Sortable
-                                  (dom-node this)
-                                  #js {:handle ".handle"
-                                       :onEnd (partial finished-sorting-handler todos filename)}))}))
 
 (defn component-item-edit [item-title edit-mode item-done-fn]
   [(with-focus-wrapper)
@@ -344,13 +342,15 @@
           [:div.todo-text {:on-double-click #(swap! edit-mode not)} (todo :title)]])])))
 
 (defn component-list-of-todos [todos filename add-mode]
-  [(with-sortable-wrapper todos filename)
-   (fn []
-     (if (> (count @todos) 0)
-       [:ul {:key filename}
-        (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todos filename todo) idx todo add-mode])
-                            (filter :matched (@todos filename))))]
-       [:div#loader [:div]]))])
+  [(with-meta
+     (fn []
+       (if (> (count @todos) 0)
+         [:ul {:key filename}
+          (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todos filename todo) idx todo add-mode])
+                              (filter :matched (@todos filename))))]
+         [:div#loader [:div]]))
+     {:component-did-mount (partial apply-sortable todos filename)
+      :component-did-update (partial apply-sortable todos filename)})])
 
 (defn todo-page [todos filename]
   (let [add-mode (atom false)
