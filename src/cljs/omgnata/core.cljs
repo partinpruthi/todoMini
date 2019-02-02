@@ -301,11 +301,7 @@
   (with-meta identity {:component-did-mount (fn [this] (get-focus this))}))
 
 (defn with-delayed-focus-wrapper []
-  (with-meta identity {:component-did-update (fn [this]
-                                               ; only get focus if they have just created a note
-                                               (let [node (dom-node this)
-                                                     content-length (.-length (.-value node))]
-                                                 (if (= 0 content-length) (get-focus this))))}))
+  )
 
 (defn component-item-edit [item-title edit-mode item-done-fn]
   [(with-focus-wrapper)
@@ -318,11 +314,17 @@
                                            (js/setTimeout #(swap! edit-mode not) 100))}])])
 
 (defn component-item-add [item-title edit-mode item-done-fn]
-  [(with-delayed-focus-wrapper)
-   (fn []
-     [:textarea.add-item-text {:value @item-title
-                               :on-change #(reset! item-title (-> % .-target .-value))
-                               :on-key-down (fn [ev] (when (= (.-which ev) 13) (item-done-fn ev) (.preventDefault ev)))}])])
+  [(with-meta
+     (fn []
+       [:textarea.add-item-text {:auto-focus true
+                                 :value @item-title
+                                 :on-change #(reset! item-title (-> % .-target .-value))
+                                 :on-key-down (fn [ev] (when (= (.-which ev) 13) (item-done-fn ev) (.preventDefault ev)))}])
+     {:component-did-update (fn [this]
+                              ; only get focus if they have just created a note
+                              (let [node (dom-node this)
+                                    content-length (.-length (.-value node))]
+                                (if (= 0 content-length) (get-focus this))))})])
 
 (defn component-todo-item [todos filename todo]
   (let [edit-mode (atom false)
@@ -383,7 +385,7 @@
          (if @add-mode [:i {:class "fa fa-stack-1x fa-times fa-inverse"}] [:i {:class "fa fa-stack-1x fa-pencil fa-inverse"}])]
         (when @add-mode
           [:div#add-item-container
-           [:input {:on-change #(reset! new-item (-> % .-target .-value)) :on-key-down #(if (= (.-which %) 13) (update-fn %)) :value @new-item}]
+           [:input {:auto-focus true :on-change #(reset! new-item (-> % .-target .-value)) :on-key-down #(if (= (.-which %) 13) (update-fn %)) :value @new-item}]
            [:i#add-item-done.btn {:on-click update-fn :class "fa fa-check-circle"}]])]
        [:ul {}
         (if (count @todos)
