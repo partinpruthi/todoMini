@@ -254,20 +254,22 @@
   (reset! new-item-title ""))
 
 (defn finished-sorting-handler [todos filename ev]
-  (let [old-idx (aget ev "oldIndex")
-        new-idx (aget ev "newIndex")
-        el (.-item ev)
-        data-index (int (.getAttribute el "data-index"))
-        todo-list (get @todos filename)
-        start-index (get-index-of todo-list :index data-index)
-        difference (- new-idx old-idx)
-        destination-index (+ start-index difference)]
-    (update-file filename
-                 (reassemble-todos
-                   ((swap! todos #(-> %
-                                      (assoc-in [filename] (re-order-todo-list todo-list start-index destination-index))
-                                      (re-compute-indices filename)))
-                    filename)))))
+  (when (and (aget ev "oldIndex") (aget ev "newIndex"))
+    (let [old-idx (aget ev "oldIndex")
+          new-idx (aget ev "newIndex")
+          el (.-item ev)
+          data-index (int (.getAttribute el "data-index"))
+          todo-list (get @todos filename)
+          start-index (get-index-of todo-list :index data-index)
+          difference (- new-idx old-idx)
+          destination-index (+ start-index difference)]
+      (update-file filename
+                   (reassemble-todos
+                     ((swap! todos #(-> %
+                                        (assoc-in [filename] (re-order-todo-list todo-list start-index destination-index))
+                                        (re-compute-indices filename)))
+                      filename))))
+    true))
 
 (defn apply-sortable [todos filename this]
   (js/console.log "Sortable wrapping.")
