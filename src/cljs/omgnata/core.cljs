@@ -185,21 +185,23 @@
           ; if we have fired off a new instance don't use this one
           (when (= instance-id @instance)
             (js/console.log "Long poller result:" (clj->js result))
-            (if (>= (result "timestamp") @last-timestamp)
-              (do
-                (reset! last-timestamp (result "timestamp"))
-                (when (not ok)
-                  ; this happens with the poller timeout so we can't use it d'oh
-                  )
-                (let [transformed-todos (transform-text-todos (result "files"))
-                      timestamps (into {} (map (fn [[fname timestamp]] [(no-extension fname) timestamp]) (result "creation_timestamps")))]
-                  (when (and ok (not (= @file-timestamps timestamps)) timestamps (> (count timestamps) 0))
-                    (js/console.log "creation timestamps:" (clj->js timestamps))
-                    (reset! file-timestamps timestamps))
-                  (when (and ok (result "files") (not (= @todos transformed-todos)))
-                    (js/console.log "long-poller result:" @last-timestamp ok (clj->js result))
-                    (reset! todos transformed-todos))))
-              (js/console.log "Ignoring old data:" (clj->js result)))
+            (if (get result "failure")
+              (js/console.log "Ignoring bad data." (clj->js result))
+              (if (>= (result "timestamp") @last-timestamp)
+                (do
+                  (reset! last-timestamp (result "timestamp"))
+                  (when (not ok)
+                    ; this happens with the poller timeout so we can't use it d'oh
+                    )
+                  (let [transformed-todos (transform-text-todos (result "files"))
+                        timestamps (into {} (map (fn [[fname timestamp]] [(no-extension fname) timestamp]) (result "creation_timestamps")))]
+                    (when (and ok (not (= @file-timestamps timestamps)) timestamps (> (count timestamps) 0))
+                      (js/console.log "creation timestamps:" (clj->js timestamps))
+                      (reset! file-timestamps timestamps))
+                    (when (and ok (result "files") (not (= @todos transformed-todos)))
+                      (js/console.log "long-poller result:" @last-timestamp ok (clj->js result))
+                      (reset! todos transformed-todos))))
+                (js/console.log "Ignoring old data:" (clj->js result))))
             (<! (timeout 1000))
             (recur))))))
 
