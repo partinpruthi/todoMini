@@ -251,8 +251,8 @@
   (reset! new-item-title ""))
 
 (defn finished-sorting-handler [todos filename ev]
-  (let [old-idx (.-oldIndex ev)
-        new-idx (.-newIndex ev)
+  (let [old-idx (aget ev "oldIndex")
+        new-idx (aget ev "newIndex")
         el (.-item ev)
         data-index (int (.getAttribute el "data-index"))
         todo-list (get @todos filename)
