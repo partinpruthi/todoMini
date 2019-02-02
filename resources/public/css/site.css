@@ -211,7 +211,6 @@ li.todo-line > span.edit-mode {
   float: right;
   display: inline-block;
   margin-right: 0.125em;
-  touch-action: none;
 }
 
 .sortable-chosen {
