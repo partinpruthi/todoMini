@@ -13,6 +13,13 @@ TARGETS=$(RESOURCES) $(IDX) $(APP) $(CSS) $(SERVER)
 
 all: $(TARGETS)
 
+release: todomini.zip
+
+todomini.zip: all
+	ln -s build todomini
+	zip -r todomini.zip todomini
+	rm todomini
+
 $(RESOURCES): $(RESOURCES_SRC)
 	@echo "Copying resources:" $@
 	@mkdir -p `dirname $@`
