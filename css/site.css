@@ -107,6 +107,10 @@ li.todo-link > span {
   display: block;  
 }
 
+li.todo-link span.unchecked-count {
+  float: right;
+}
+
 ul {
   padding-left: 0px;
   margin-top: 0px;
