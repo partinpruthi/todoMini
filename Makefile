@@ -6,7 +6,7 @@ RESOURCES_SRC=$(addprefix resources/public/, $(RESOURCES_NAMES))
 RESOURCES=$(addprefix build/, $(RESOURCES_NAMES))
 IDX=build/index.html
 APP=build/js/app.js
-CSS=build/css/site.css
+CSS=build/css/site.min.css
 SERVER=$(addprefix build/, $(SERVER_FILES))
 
 TARGETS=$(RESOURCES) $(IDX) $(APP) $(CSS) $(SERVER)
@@ -27,8 +27,7 @@ $(RESOURCES): $(RESOURCES_SRC)
 	@touch $@
 
 $(CSS): resources/public/css/site.css
-	# lein minify-assets
-	cp $< $@
+	lein minify-assets
 	
 $(APP): src/**/** project.clj
 	rm -f $(APP)
