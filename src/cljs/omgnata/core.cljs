@@ -21,6 +21,7 @@
 (defonce todo-lists (atom {}))
 (defonce todo-timestamps (atom {}))
 (defonce last-timestamp (atom 0))
+(defonce sorter (atom nil))
 
 (def re-todo-finder #"[\ \t]*\*[\ \t]*\[(.*?)\]")
 (def re-todo-parser #"[\ \t]*\*[\ \t]*\[(.*?)\][\ \t]*(.*?)[\n$]([\s\S]*)")
@@ -270,10 +271,14 @@
 
 (defn apply-sortable [todos filename this]
   (js/console.log "Sortable wrapping.")
-  (.create js/Sortable
-           (dom-node this)
-           #js {:handle ".handle"
-                :onEnd (partial finished-sorting-handler todos filename)}))
+  (when @sorter
+    (.call (aget @sorter "destroy") @sorter))
+  (reset! sorter
+          (.create js/Sortable
+                   (dom-node this)
+                   #js {:handle ".handle"
+                        :animation 150
+                        :onEnd (partial finished-sorting-handler todos filename)})))
 
 (defn add-todo-list-handler [todos new-item add-mode ev]
   (update-file @new-item (swap! todos assoc @new-item []))
