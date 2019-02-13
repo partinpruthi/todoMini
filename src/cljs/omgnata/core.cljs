@@ -4,6 +4,7 @@
             [secretary.core :as secretary :include-macros true]
             [ajax.core :refer [GET POST ajax-request json-response-format raw-response-format url-request-format]]
             [cljs.core.async :refer [<! chan close! put! timeout]]
+            [goog.net.cookies]
             [goog.events :as events]
             [goog.history.EventType :as EventType])
   (:require-macros 
@@ -51,6 +52,8 @@
 (defn insert-at [v idx values]
   (let [[before after] (split-at idx v)]
     (vec (concat before values after))))
+
+(defn csrftoken [] (.get goog.net.cookies "csrftoken"))
 
 ;***** todo parsing *****;
 
@@ -142,9 +145,9 @@
   (let [c (chan)]
     (ajax-request {:uri (@server :url)
                    :method :get
+                   :with-credentials true
                    :params {:timestamp timestamp
                             :live_for (@server :poller-time)}
-                   :with-credentials true
                    :response-format (json-response-format)
                    :handler #(put! c %)})
     c))
@@ -153,10 +156,11 @@
   "Ask the server to update a particular text file with text contents."
   (ajax-request {:uri (@server :url)
                  :method :post
+                 :with-credentials true
+                 :headers {"X-CSRFToken" (csrftoken)}
                  :format (url-request-format)
                  :params {:filename (str fname ".txt")
                           :content text}
-                 :with-credentials true
                  :response-format (json-response-format)
                  ; TODO: handle result
                  :handler (fn [[ok result]]
@@ -169,9 +173,10 @@
   ; not RESTful because PHP doesn't support DELETE parameters well
   (ajax-request {:uri (@server :url)
                  :method :post
-                 :params {:delete (str fname ".txt")}
                  :with-credentials true
+                 :headers {"X-CSRFToken" (csrftoken)}
                  :format (url-request-format)
+                 :params {:delete (str fname ".txt")}
                  :response-format (json-response-format)
                  :handler (fn [[ok result]]
                             (print "delete-file result:" ok (clj->js result))
