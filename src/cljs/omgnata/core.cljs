@@ -168,9 +168,10 @@
   "Ask the server to delete a single file."
   ; not RESTful because PHP doesn't support DELETE parameters well
   (ajax-request {:uri (@server :url)
-                 :method :get
+                 :method :post
                  :params {:delete (str fname ".txt")}
                  :with-credentials true
+                 :format (url-request-format)
                  :response-format (json-response-format)
                  :handler (fn [[ok result]]
                             (print "delete-file result:" ok (clj->js result))

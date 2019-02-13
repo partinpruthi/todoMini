@@ -12,9 +12,11 @@ cors();
 $dir = "data";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  updateFile($_POST, $dir);
-} elseif (isset($_GET["delete"])) {
-  deleteFile($_GET, $dir);
+  if (isset($_POST["filename"])) {
+    updateFile($_POST, $dir);
+  } elseif (isset($_POST["delete"])) {
+    deleteFile($_POST, $dir);
+  }
 } else {
   dirPoller($dir);
 }
