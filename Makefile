@@ -17,7 +17,7 @@ release: todomini.zip
 
 todomini.zip: all
 	ln -s build todomini
-	zip -r todomini.zip todomini
+	zip -r --exclude="*.git*" todomini.zip todomini
 	rm todomini
 
 $(RESOURCES): $(RESOURCES_SRC)
