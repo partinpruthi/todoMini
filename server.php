@@ -12,9 +12,11 @@ cors();
 $dir = "data";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  updateFile($_POST, $dir);
-} elseif (isset($_GET["delete"])) {
-  deleteFile($_GET, $dir);
+  if (isset($_POST["filename"])) {
+    updateFile($_POST, $dir);
+  } elseif (isset($_POST["delete"])) {
+    deleteFile($_POST, $dir);
+  }
 } else {
   dirPoller($dir);
 }
@@ -54,7 +56,7 @@ function dirPoller($datadir) {
     // get timestamp of when file has been changed the last time
     $last_change_in_data_files = dirTimestamp($datadir);
     // if no timestamp delivered via ajax or data.txt has been changed SINCE last ajax timestamp
-    if ($last_ajax_call == null || $last_change_in_data_files > $last_ajax_call) {
+    if ($last_ajax_call == null || (int)($last_change_in_data_files * 1000) > (int)($last_ajax_call * 1000)) {
         // get content of data.txt
         $data = dirFiles($datadir);
         // put data.txt's content and timestamp of last data.txt change into array
