@@ -24,6 +24,8 @@ To require authentication, first create a password file:
 
 Then copy `./example.htaccess` to `.htaccess` and edit it.
 
+Ensure that the `data/` directory and files therein are writable by the user/group running PHP.
+
 ### Multi-user ###
 
 If you have multiple users, clone the directory for each user and create a unique htaccess login for each.
