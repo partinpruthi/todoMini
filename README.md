@@ -13,6 +13,8 @@ Simple TODO list app requirements:
 
 Surprisingly, I could not find software meeting these criteria.
 
+[If you use todoMini, please give it a 'like' on alternativeto.net](https://alternativeto.net/software/todomini/)
+
 ### Install ###
 
  * Download [a release](https://github.com/chr15m/omgnata/releases) or `git clone` the `gh-pages` branch.
