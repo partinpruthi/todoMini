@@ -18,13 +18,15 @@ Surprisingly, I could not find software meeting these criteria.
  * Download [a release](https://github.com/chr15m/omgnata/releases) or `git clone` the `gh-pages` branch.
  * Copy the files to your PHP web hosting.
 
+Note: ensure that the `data/` directory and files therein are writable by the user/group running PHP.
+
+### Authentication ###
+
 To require authentication, first create a password file:
 
 	htpasswd -c /path/to/.htpasswd username
 
 Then copy `./example.htaccess` to `.htaccess` and edit it.
-
-Ensure that the `data/` directory and files therein are writable by the user/group running PHP.
 
 ### Multi-user ###
 
