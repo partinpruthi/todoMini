@@ -356,8 +356,8 @@
           [:i.btn.update-item-done {:on-click item-update-fn :class "fa fa-check-circle"}]]
          [:span {}
           (when @parent-add-mode [:span
-                                  [:i.handle.btn {:class "fa fa-sort"}] 
-                                  [:i.btn.delete-item {:on-click (partial delete-item-handler todos filename todo) :class "fa fa-minus-circle"}]]) 
+                                  [:i.btn.delete-item {:on-click (partial delete-item-handler todos filename todo) :class "fa fa-minus-circle"}]
+                                  [:span.btn.handle.fa-stack [:i {:class "fa fa-circle fa-stack-2x"}] [:i {:class "fa fa-bars fa-stack-1x fa-inverse"}]]])
           [:i.checkbox.btn {:on-click (partial checkbox-handler todos filename todo) :class (if (todo :checked) "fa fa-check-circle" "fa fa-circle")}] 
           [:div.todo-text {:on-double-click #(swap! edit-mode not)} (todo :title)]])])))
 
