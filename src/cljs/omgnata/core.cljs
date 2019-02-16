@@ -424,10 +424,10 @@
 ;; Routes
 
 (secretary/defroute "/" []
-  (session/put! :current-page (lists-page todo-lists todo-timestamps)))
+  (session/put! :current-page (partial #'lists-page todo-lists todo-timestamps)))
 
 (secretary/defroute "/:fname" [fname]
-  (session/put! :current-page (todo-page todo-lists fname)))
+  (session/put! :current-page (partial #'todo-page todo-lists fname)))
 
 ;; -------------------------
 ;; History
