@@ -47,15 +47,23 @@ def dir_poller(request, folder):
     # http://localhost:8000/server.php?timestamp=1549884871.1449&live_for=30
     # timestamp: 1549884871.1449
     # live_for: 30
-    timestamp = float(request.GET.get("timestamp", 0))
-    live_for = max(0, min(int(request.GET.get("live_for", 25)), 25))
+    try:
+        timestamp = float(request.GET.get("timestamp", 0))
+    except ValueError:
+        timestamp = 0
+    try:
+        live_for = max(0, min(int(request.GET.get("live_for", 25)), 25))
+    except ValueError:
+        live_for = 25
     last_modified = None
     when = make_aware(datetime.fromtimestamp(timestamp))
 
     while live_for:
         last_modified = TodoFile.objects.filter(folder=folder).order_by("-modified").first()
         print("dir_poller", folder, last_modified and last_modified.modified)
-        if last_modified and last_modified.modified > when:
+        if not last_modified:
+            break
+        elif last_modified.modified > when:
             break
         live_for -= 1
         time.sleep(1)
