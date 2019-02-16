@@ -240,6 +240,11 @@ li.todo-line > span.edit-mode {
 .oddeven-1 {
 }
 
+.message {
+  text-align: center;
+  color: silver;
+}
+
 /*** loader animation ***/
 
 #loader > div {

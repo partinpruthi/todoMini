@@ -364,11 +364,9 @@
 (defn component-list-of-todos [todos filename add-mode]
   [(with-meta
      (fn []
-       (if (> (count @todos) 0)
-         [:ul {:key filename}
-          (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todos filename todo) idx todo add-mode])
-                              (filter :matched (@todos filename))))]
-         [:div#loader [:div]]))
+       [:ul {:key filename}
+        (doall (map-indexed (fn [idx todo] ^{:key (todo :index)} [(partial component-todo-item todos filename todo) idx todo add-mode])
+                            (filter :matched (@todos filename))))])
      {:component-did-mount (partial apply-sortable todos filename)
       :component-did-update (partial apply-sortable todos filename)})])
 
@@ -391,6 +389,10 @@
            [:div#add-item-container
             [component-item-add new-item-title add-mode item-done-fn]
             [:i#add-item-done.btn {:on-click item-done-fn :class "fa fa-check-circle"}]])
+         (when (and (= (count (@todos filename)) 0) (not @add-mode))
+           [:div.message
+            [:p "All done!"]
+            [:p "Use the pencil icon to add a list item."]])
          [component-list-of-todos todos filename add-mode]]))))
 
 (defn lists-page [todos timestamps]
@@ -419,7 +421,10 @@
                                      [:span {:on-click (partial switch-to-todo fname)} fname]]))
                                 ; sort by the creation time timestamps the server has sent, defaulting to infinity (for newly created files)
                                 (sort #(compare (or (@timestamps (first %2)) js/Number.MAX_VALUE) (or (@timestamps (first %1)) js/Number.MAX_VALUE)) @todos)))
-            [:li "No TODOs yet."])]]))))
+            (when (not @add-mode)
+              [:li.message
+               [:p "You don't have any TODO lists yet."]
+               [:p "You can create lists like 'Shopping' or 'Work' using the pencil icon."]]))]]))))
 
 (defn current-page []
   [:div [(session/get :current-page)]])
