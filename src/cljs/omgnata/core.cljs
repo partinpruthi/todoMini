@@ -13,7 +13,7 @@
 
 (enable-console-print!)
 
-(def server (atom {:url (str (.replace (-> js/document .-location .-href) ":3449" ":8000") "server.php")
+(def server (atom {:url (str (-> js/document .-location .-href (.split "#") (get 0) (.replace ":3449" ":8000")) "server.php")
                    :poller-time 5}))
 
 (secretary/set-config! :prefix "#")
