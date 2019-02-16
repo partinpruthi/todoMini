@@ -13,7 +13,12 @@
 
 (enable-console-print!)
 
-(def server (atom {:url (str (-> js/document .-location .-href (.split "#") (get 0) (.replace ":3449" ":8000")) "server.php")
+(def href (-> js/document .-location .-href))
+
+(def server (atom {:url (str (-> href
+                                 (.split "#") (get 0)
+                                 (.split "?") (get 0)
+                                 (.replace ":3449" ":8000")) "server.php")
                    :poller-time 5}))
 
 (secretary/set-config! :prefix "#")
@@ -21,7 +26,7 @@
 (defonce instance (atom 0))
 (defonce todo-lists (atom {}))
 (defonce todo-timestamps (atom {}))
-(defonce last-timestamp (atom nil))
+(defonce last-timestamp (atom (if (not= (.indexOf href "?demo") -1) 0)))
 (defonce sorter (atom nil))
 
 (def re-todo-finder #"[\ \t]*\*[\ \t]*\[(.*?)\]")
