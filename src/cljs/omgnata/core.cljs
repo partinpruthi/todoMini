@@ -21,7 +21,7 @@
 (defonce instance (atom 0))
 (defonce todo-lists (atom {}))
 (defonce todo-timestamps (atom {}))
-(defonce last-timestamp (atom 0))
+(defonce last-timestamp (atom nil))
 (defonce sorter (atom nil))
 
 (def re-todo-finder #"[\ \t]*\*[\ \t]*\[(.*?)\]")
@@ -377,45 +377,49 @@
         new-item-title (atom "")
         item-done-fn (partial add-todo-item-handler todos filename new-item-title add-mode)]
     (fn []
-      [:div.todo-page
-       [:i#back.btn {:on-click go-home :class "fa fa-chevron-circle-left"}]
-       [:h3.list-title filename]
-       [:span#add-item.btn {:on-click #(swap! add-mode not) :class "fa fa-stack"}
-        [:i {:class "fa fa-stack-2x fa-circle"}]
-        (if @add-mode [:i {:class "fa fa-stack-1x fa-times fa-inverse"}] [:i {:class "fa fa-stack-1x fa-pencil fa-inverse"}])]
-       (when (and @add-mode (> (count (filter :checked (@todos filename))) 0))
-         [:i#clear-completed.btn {:on-click (partial delete-completed-handler todos filename) :class "fa fa-minus-circle"}])
-       (when @add-mode
-         [:div#add-item-container
-          [component-item-add new-item-title add-mode item-done-fn]
-          [:i#add-item-done.btn {:on-click item-done-fn :class "fa fa-check-circle"}]])
-       [component-list-of-todos todos filename add-mode]])))
+      (if (nil? @last-timestamp)
+        [:div#loader [:div]]
+        [:div.todo-page
+         [:i#back.btn {:on-click go-home :class "fa fa-chevron-circle-left"}]
+         [:h3.list-title filename]
+         [:span#add-item.btn {:on-click #(swap! add-mode not) :class "fa fa-stack"}
+          [:i {:class "fa fa-stack-2x fa-circle"}]
+          (if @add-mode [:i {:class "fa fa-stack-1x fa-times fa-inverse"}] [:i {:class "fa fa-stack-1x fa-pencil fa-inverse"}])]
+         (when (and @add-mode (> (count (filter :checked (@todos filename))) 0))
+           [:i#clear-completed.btn {:on-click (partial delete-completed-handler todos filename) :class "fa fa-minus-circle"}])
+         (when @add-mode
+           [:div#add-item-container
+            [component-item-add new-item-title add-mode item-done-fn]
+            [:i#add-item-done.btn {:on-click item-done-fn :class "fa fa-check-circle"}]])
+         [component-list-of-todos todos filename add-mode]]))))
 
 (defn lists-page [todos timestamps]
   (let [add-mode (atom false)
         new-item (atom "")
         update-fn (partial add-todo-list-handler todos new-item add-mode)]
     (fn []
-      [:div
-       [:div#list-edit-container
-        [:span#add-list.btn {:on-click #(swap! add-mode not) :class "fa fa-stack"}
-         [:i {:class "fa fa-stack-2x fa-circle"}]
-         (if @add-mode [:i {:class "fa fa-stack-1x fa-times fa-inverse"}] [:i {:class "fa fa-stack-1x fa-pencil fa-inverse"}])]
-        (when @add-mode
-          [:div#add-item-container
-           [:input {:auto-focus true :on-change #(reset! new-item (-> % .-target .-value)) :on-key-down #(if (= (.-which %) 13) (update-fn %)) :value @new-item}]
-           [:i#add-item-done.btn {:on-click update-fn :class "fa fa-check-circle"}]])]
-       [:ul {}
-        (if (count @todos)
-          (doall (map-indexed (fn [idx [filename todo-list]]
-                                (let [fname (no-extension filename)]
-                                  [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2))}
-                                   (if @add-mode [:i.delete-list.btn {:on-click (partial delete-todo-list-handler todos filename add-mode) :class "fa fa-minus-circle"}])
-                                   [:span.unchecked-count (count (filter #(= (% :checked) false) todo-list))]
-                                   [:span {:on-click (partial switch-to-todo fname)} fname]]))
-                              ; sort by the creation time timestamps the server has sent, defaulting to infinity (for newly created files)
-                              (sort #(compare (or (@timestamps (first %2)) js/Number.MAX_VALUE) (or (@timestamps (first %1)) js/Number.MAX_VALUE)) @todos)))
-          [:li "No TODOs yet."])]])))
+      (if (nil? @last-timestamp)
+        [:div#loader [:div]]
+        [:div
+         [:div#list-edit-container
+          [:span#add-list.btn {:on-click #(swap! add-mode not) :class "fa fa-stack"}
+           [:i {:class "fa fa-stack-2x fa-circle"}]
+           (if @add-mode [:i {:class "fa fa-stack-1x fa-times fa-inverse"}] [:i {:class "fa fa-stack-1x fa-pencil fa-inverse"}])]
+          (when @add-mode
+            [:div#add-item-container
+             [:input {:auto-focus true :on-change #(reset! new-item (-> % .-target .-value)) :on-key-down #(if (= (.-which %) 13) (update-fn %)) :value @new-item}]
+             [:i#add-item-done.btn {:on-click update-fn :class "fa fa-check-circle"}]])]
+         [:ul {}
+          (if (> (count @todos) 0)
+            (doall (map-indexed (fn [idx [filename todo-list]]
+                                  (let [fname (no-extension filename)]
+                                    [:li.todo-link {:key filename :class (str "oddeven-" (mod idx 2))}
+                                     (if @add-mode [:i.delete-list.btn {:on-click (partial delete-todo-list-handler todos filename add-mode) :class "fa fa-minus-circle"}])
+                                     [:span.unchecked-count (count (filter #(= (% :checked) false) todo-list))]
+                                     [:span {:on-click (partial switch-to-todo fname)} fname]]))
+                                ; sort by the creation time timestamps the server has sent, defaulting to infinity (for newly created files)
+                                (sort #(compare (or (@timestamps (first %2)) js/Number.MAX_VALUE) (or (@timestamps (first %1)) js/Number.MAX_VALUE)) @todos)))
+            [:li "No TODOs yet."])]]))))
 
 (defn current-page []
   [:div [(session/get :current-page)]])
