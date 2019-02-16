@@ -391,7 +391,7 @@
             [:i#add-item-done.btn {:on-click item-done-fn :class "fa fa-check-circle"}]])
          (when (and (= (count (@todos filename)) 0) (not @add-mode))
            [:div.message
-            [:p "All done!"]
+            [:p "All done."]
             [:p "Use the pencil icon to add a list item."]])
          [component-list-of-todos todos filename add-mode]]))))
 
