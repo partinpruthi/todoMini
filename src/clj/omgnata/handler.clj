@@ -21,7 +21,7 @@
      [:link {:rel "apple-touch-icon-precomposed" :sizes "192x192" :href "img/icon.png"}]
      [:link {:rel "icon" :type "image/png" :href "img/icon.png"}]
      [:link {:rel "manifest" :href "manifest.json"}]
-     (include-css (if (env :dev) "css/site.css" "css/site.min.css"))
+     (include-css (if (= (env :prod) "1") "css/site.min.css" "css/site.css"))
      [:script {:type "application/javascript" :src "sortable/Sortable.min.js"}]]
     [:body
      mount-target
