@@ -151,7 +151,7 @@
     (ajax-request {:uri (@server :url)
                    :method :get
                    :with-credentials true
-                   :params {:timestamp timestamp
+                   :params {:timestamp (or timestamp 0)
                             :live_for (@server :poller-time)}
                    :response-format (json-response-format)
                    :handler #(put! c %)})
