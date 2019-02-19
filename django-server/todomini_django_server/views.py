@@ -48,30 +48,34 @@ def make_timestamp(dt):
 
 def longpoll(folder, live_for, when):
     last_modified = None
-    while live_for:
-        connection.ensure_connection()
-        last_modified = TodoFile.objects.filter(folder=folder).order_by("-modified").first()
-        print("dir_poller", folder, last_modified and last_modified.modified)
-        if not last_modified:
-            break
-        elif last_modified.modified > when:
-            break
-        live_for -= 1
-        if connection.connection is not None:
-            connection.close()
-        time.sleep(1)
+    try:
+        while live_for:
+            # TODO: do we need this with pgbouncer in place?
+            #connection.ensure_connection()
+            last_modified = TodoFile.objects.filter(folder=folder).order_by("-modified").first()
+            print("dir_poller", folder, last_modified and last_modified.modified)
+            if not last_modified:
+                break
+            elif last_modified.modified > when:
+                break
+            live_for -= 1
+            #if connection.connection is not None:
+            #    connection.close()
+            time.sleep(1)
 
-    # if we exited the loop early so send the files
-    if last_modified and last_modified.modified > when:
-        files = TodoFile.objects.filter(folder=folder).order_by("-modified")
-        response = {
-            "timestamp": make_timestamp(files[0].modified),
-            "files": {f.filename:f.content for f in files},
-            "creation_timestamps": {f.filename:make_timestamp(f.modified) for f in files},
-        }
-    else:
-        # otherwise just send the last good timestamp
-        response = {"timestamp": last_modified and make_timestamp(last_modified.modified) or (time.time() - 1)}
+        # if we exited the loop early so send the files
+        if last_modified and last_modified.modified > when:
+            files = TodoFile.objects.filter(folder=folder).order_by("-modified")
+            response = {
+                "timestamp": make_timestamp(files[0].modified),
+                "files": {f.filename:f.content for f in files},
+                "creation_timestamps": {f.filename:make_timestamp(f.modified) for f in files},
+            }
+        else:
+            # otherwise just send the last good timestamp
+            response = {"timestamp": last_modified and make_timestamp(last_modified.modified) or (time.time() - 1)}
+    except Exception as e:
+        response = {"error": str(e)}
     
     return json.dumps(response)
 
