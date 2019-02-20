@@ -23,11 +23,12 @@
 
 (secretary/set-config! :prefix "#")
 
-(defonce instance (atom 0))
+(defonce poller-instance (atom 0))
 (defonce todo-lists (atom {}))
 (defonce todo-timestamps (atom {}))
 (defonce last-timestamp (atom (if (not= (.indexOf href "?demo") -1) 0)))
 (defonce sorter (atom nil))
+(defonce app-has-focus (atom true))
 
 (def re-todo-finder #"[\ \t]*\*[\ \t]*\[(.*?)\]")
 (def re-todo-parser #"[\ \t]*\*[\ \t]*\[(.*?)\][\ \t]*(.*?)[\n$]([\s\S]*)")
@@ -191,34 +192,35 @@
 (defn long-poller [todos file-timestamps instance-id]
   "Continuously poll the server updating the todos atom when the textfile data changes."
   (go (loop [wait 1000]
-        (print "Long poller initiated:" instance-id "timestamp:" @last-timestamp)
-        ; don't fire off more than 1 time per second
-        (let [[ok result] (<! (get-files @last-timestamp))]
-          ; if we have fired off a new instance don't use this one
-          (when (= instance-id @instance)
+        ; if we have fired off a new instance don't use this one
+        (when (= instance-id @poller-instance)
+          (print "Long poller initiated:" instance-id "timestamp:" @last-timestamp)
+          ; don't fire off more than 1 time per second
+          (let [[ok result] (if @app-has-focus (<! (get-files @last-timestamp)) [false {:failure "App lost focus. Skipping poll."}])]
             (js/console.log "Long-poller result:" (clj->js result))
-            (let [new-wait
-                  (or (if (result :failure)
-                        (do (js/console.log "Long-poller ignoring bad data.") nil)
-                        (do (if (>= (result "timestamp") @last-timestamp)
-                              (do
-                                (js/console.log "Long-poller new timestamp.")
-                                (reset! last-timestamp (result "timestamp"))
-                                (when (not ok)
-                                  ; this happens with the poller timeout so we can't use it d'oh
-                                  )
-                                (let [transformed-todos (transform-text-todos (result "files"))
-                                      timestamps (into {} (map (fn [[fname timestamp]] [(no-extension fname) timestamp]) (result "creation_timestamps")))]
-                                  (when (and ok (not (= @file-timestamps timestamps)) timestamps (> (count timestamps) 0))
-                                    (js/console.log "Long-poller creation timestamps:" (clj->js timestamps))
-                                    (reset! file-timestamps timestamps))
-                                  (when (and ok (result "files") (not (= @todos transformed-todos)))
-                                    (js/console.log "long-poller result:" @last-timestamp ok (clj->js result))
-                                    (reset! todos transformed-todos))))
-                              (js/console.log "Long-poller ignoring old data:" (clj->js result)))
-                            ; reset wait time
-                            1000))
-                      (min (* wait 2) 120000))]
+            (let [new-wait (if @app-has-focus
+                             (or (if (result :failure)
+                                   (do (js/console.log "Long-poller ignoring bad data.") nil)
+                                   (do (if (>= (result "timestamp") @last-timestamp)
+                                         (do
+                                           (js/console.log "Long-poller new timestamp.")
+                                           (reset! last-timestamp (result "timestamp"))
+                                           (when (not ok)
+                                             ; this happens with the poller timeout so we can't use it d'oh
+                                             )
+                                           (let [transformed-todos (transform-text-todos (result "files"))
+                                                 timestamps (into {} (map (fn [[fname timestamp]] [(no-extension fname) timestamp]) (result "creation_timestamps")))]
+                                             (when (and ok (not (= @file-timestamps timestamps)) timestamps (> (count timestamps) 0))
+                                               (js/console.log "Long-poller creation timestamps:" (clj->js timestamps))
+                                               (reset! file-timestamps timestamps))
+                                             (when (and ok (result "files") (not (= @todos transformed-todos)))
+                                               (js/console.log "long-poller result:" @last-timestamp ok (clj->js result))
+                                               (reset! todos transformed-todos))))
+                                         (js/console.log "Long-poller ignoring old data:" (clj->js result)))
+                                       ; reset wait time
+                                       1000))
+                                 (min (* wait 2) 120000))
+                             2000)]
               (js/console.log "Long-poller timeout wait:" new-wait)
               (<! (timeout new-wait))
               (recur new-wait)))))))
@@ -444,7 +446,7 @@
   (session/put! :current-page (partial #'todo-page todo-lists fname)))
 
 ;; -------------------------
-;; History
+;; Hooks
 
 ;; Quick and dirty history configuration.
 (defn hook-browser-navigation! []
@@ -452,11 +454,15 @@
     (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
     (doto h (.setEnabled true))))
 
+(defn hook-focus-watcher! [f]
+  (.addEventListener js/window "blur" #(reset! f false) false)
+  (.addEventListener js/window "focus" #(reset! f true) false))
+
 ;; -------------------------
 ;; Initialize app
 
 ; initiate the long-poller
-(long-poller todo-lists todo-timestamps (swap! instance inc))
+(long-poller todo-lists todo-timestamps (swap! poller-instance inc))
 
 ; tell react to handle touch events
 (.initializeTouchEvents js/React true)
@@ -471,4 +477,5 @@
            :poller-time 30)
     (js/console.log "dev mode"))
   (hook-browser-navigation!)
+  (hook-focus-watcher! app-has-focus)
   (mount-root))
