@@ -1,8 +1,6 @@
-# OMG Not Another TODO App #
-
 ![Screenshot](./screenshot.png)
 
-Simple TODO list app requirements:
+Minimal TODO list web app:
 
  * Web based.
  * Easy to deploy.
@@ -13,9 +11,11 @@ Simple TODO list app requirements:
 
 Surprisingly, I could not find software meeting these criteria.
 
-### Install ###
+### Hosted Install
 
 [Get a fully hosted todoMini for $1 per month](https://www.todomini.app/).
+
+### Self-hosted Install
 
  * Download [a release](https://github.com/chr15m/omgnata/releases) or `git clone` the `gh-pages` branch.
  * Copy the files to your PHP web hosting.
@@ -24,7 +24,7 @@ Note: ensure that the `data/` directory and files therein are writable by the us
 
 [If you use todoMini, please give it a 'like' on alternativeto.net](https://alternativeto.net/software/todomini/)
 
-### Authentication ###
+### Authentication
 
 To require authentication, first create a password file:
 
@@ -32,13 +32,13 @@ To require authentication, first create a password file:
 
 Then copy `./example.htaccess` to `.htaccess` and edit it.
 
-### Multi-user ###
+### Multi-user
 
 If you have multiple users, clone the directory for each user and create a unique htaccess login for each.
 
 To create a shared list, symlink one of the TODO list files into each user's data directory.
 
-### Textfile format ###
+### Textfile format
 
 The TODO lists use standard Markdown format:
 
@@ -46,6 +46,6 @@ The TODO lists use standard Markdown format:
 	 * [ ] Another uncompleted item.
 	 * [ ] Something else.
 
-### License ###
+### License
 
 Copyright Chris McCormick, 2016. [GPLv3 licensed](./LICENSE.txt).
