@@ -13,14 +13,16 @@ Simple TODO list app requirements:
 
 Surprisingly, I could not find software meeting these criteria.
 
-[If you use todoMini, please give it a 'like' on alternativeto.net](https://alternativeto.net/software/todomini/)
-
 ### Install ###
+
+[Get a fully hosted todoMini for $1 per month](https://www.todomini.app/).
 
  * Download [a release](https://github.com/chr15m/omgnata/releases) or `git clone` the `gh-pages` branch.
  * Copy the files to your PHP web hosting.
 
 Note: ensure that the `data/` directory and files therein are writable by the user/group running PHP.
+
+[If you use todoMini, please give it a 'like' on alternativeto.net](https://alternativeto.net/software/todomini/)
 
 ### Authentication ###
 
