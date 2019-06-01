@@ -130,7 +130,7 @@ function endsWith($string, $test) {
 function filemtime_precise($path){
     $dateUnix = shell_exec('stat --format "%y" \'' . $path . '\'');
     $date = explode(".", $dateUnix);
-    return (float)(filemtime($path).".".substr($date[1], 0, 8));
+    return (float)(filemtime($path).".".substr(isset($date[1]) ? $date[1] : null, 0, 8));
 }
 
 function cors() {
