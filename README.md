@@ -13,7 +13,7 @@ Surprisingly, I could not find software meeting these criteria.
 
 ### Hosted Install
 
-[Get a fully hosted todoMini for $1 per month](https://www.todomini.app/).
+[Get a fully hosted todoMini](https://www.todomini.app/).
 
 ### Self-hosted Install
 
