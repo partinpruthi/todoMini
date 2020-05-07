@@ -18,7 +18,7 @@ Surprisingly, I could not find software meeting these criteria.
 ### Self-hosted Install
 
  * Download [a release](https://github.com/chr15m/omgnata/releases) or `git clone` the `gh-pages` branch.
- * Copy the files to your PHP web hosting.
+ * Copy the files to your PHP web hosting. The hosting should have shell_exec enabled.
 
 Note: ensure that the `data/` directory and files therein are writable by the user/group running PHP.
 
